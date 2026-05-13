@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Run artifacts
+Output/
+out_*/
+wandb/
+*.log
+nohup*.out
+
+# Model files
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# Data cache
+.cache/
+*.cache
