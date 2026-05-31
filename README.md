@@ -1,0 +1,136 @@
+# RMNP: Row-Momentum Normalized Preconditioning for Scalable Matrix-Based Optimization
+
+This repository contains the official implementation of **RMNP (Row-Momentum Normalized Preconditioning)**, a scalable matrix-based optimizer for large model pre-training. RMNP replaces the Newton–Schulz (NS) iteration used by **Muon** with a simple per-row $\ell_2$ normalization of the momentum buffer, which is provably equivalent to Muon's orthogonalization step under the row-wise block-diagonal dominance regime that we observe to hold (and grow stronger) for transformer gradient momentum matrices in practice.
+
+## Algorithms
+
+### Muon
+
+```math
+\begin{aligned}
+        &\textbf{Input:} \ \eta,\ \mu,\ K \ \text{(NS steps)} \\
+        &\textbf{Initialize:}\ \theta_0,\ m_0 \leftarrow 0 \\
+        &\textbf{for } t=1 \text{ to } T \text{ do} \\
+        &\quad g_t \leftarrow \nabla f(\theta_{t-1}) \\
+        &\quad m_t \leftarrow \mu\, m_{t-1} + g_t \\
+        &\quad \color{red}{O_t \leftarrow \text{NewtonSchulz}(m_t,\ K)} \\
+        &\quad \theta_t \leftarrow \theta_{t-1} - \eta\, O_t \\
+        &\textbf{end for}
+    \end{aligned}
+```
+
+### RMNP (Ours)
+
+```math
+\begin{aligned}
+        &\textbf{Input:} \ \eta,\ \mu,\ \epsilon \\
+        &\textbf{Initialize:}\ W_0,\ M_0 \leftarrow 0 \\
+        &\textbf{for } t=1 \text{ to } T \text{ do} \\
+        &\quad G_t \leftarrow \nabla_W f_t(W_{t-1}) \\
+        &\quad M_t \leftarrow \mu\, M_{t-1} + (1-\mu)\, G_t \\
+        &\quad \color{blue}{R_t \leftarrow \operatorname{RowNormalize}(M_t;\ \epsilon)} \\
+        &\quad W_t \leftarrow W_{t-1} - \eta\, R_t \\
+        &\textbf{end for}
+    \end{aligned}
+```
+
+with
+```math
+\bigl[\operatorname{RowNormalize}(M;\epsilon)\bigr]_{i,:} \;=\; \frac{M_{i,:}}{\lVert M_{i,:} \rVert_2 + \epsilon}.
+```
+
+### Diagonal-Dominance Monitoring
+
+To verify the condition under which $\operatorname{RowNormalize}(M_t) \approx U V^\top$ holds, we monitor the row-wise diagonal-dominance ratio of the Gram matrix $V_t V_t^\top$ throughout training. For row $i$ we define
+
+```math
+r_i \;=\; \frac{\bigl|(V_t V_t^\top)_{ii}\bigr|}{\tfrac{1}{m-1}\sum_{j\neq i}\bigl|(V_t V_t^\top)_{ij}\bigr|},
+```
+
+and aggregate across rows to obtain $r_{\text{avg}}$, $r_{\min}$, $r_{\max}$. Averaging these three statistics over all matrix parameters in the network gives the global metrics $\overline{r}_{\text{avg}}$, $\overline{r}_{\min}$, $\overline{r}_{\max}$. A value $r_i > 1$ means the diagonal entry exceeds the mean off-diagonal magnitude in row $i$ — the larger, the closer $V_t V_t^\top$ is to a diagonal matrix.
+
+![Global diagonal-dominance ratios $\overline{r}_{\text{avg}}, \overline{r}_{\min}, \overline{r}_{\max}$ across GPT-2 (Small/Medium/Large, top) and LLaMA (60M/130M/350M, bottom). X-axis: relative training progress (%); y-axis: log scale; red dashed line $y=1$ marks the dominance threshold.](assets/diagonal_dominance_ratio.png)
+
+**Observations.** Across all six configurations and the full training trajectory: $\overline{r}_{\min}$ stays comfortably above the $y=1$ threshold, $\overline{r}_{\text{avg}}$ consistently exceeds $5$, and $\overline{r}_{\max}$ reaches the order of tens. More importantly, **diagonal dominance strengthens monotonically as model size grows** — GPT-2 Large and LLaMA 350M exhibit visibly higher $\overline{r}$ across all three statistics than their smaller counterparts. This indicates that the row-wise block-diagonal dominance underlying RMNP is not an artefact of small scale; it becomes *more* pronounced as models scale, making RMNP an increasingly favorable replacement for Muon's NS iteration at scale.
+
+**Key idea.** When $M_t$ is row-diagonally dominant (empirically observed and strengthening with scale), the leading singular directions of $M_t$ align with its rows, and the orthogonal factor from $M_t = U\Sigma V^\top$ satisfies $U V^\top \approx \operatorname{RowNormalize}(M_t)$. RMNP therefore matches Muon's update direction while replacing the iterative NS polynomial (multiple matmuls per step) with a single elementwise normalization — yielding lower wall-clock cost and friendlier scaling to large hidden dimensions.
+
+## Repository Layout
+
+```
+RMNP/
+├── GPT-2/        # GPT-2 (125M / 355M / 770M / XL) pre-training pipeline
+│   ├── MARS/             # model & training entrypoints (train_{adamw,muon,rmnp}.py)
+│   ├── config/           # per-(size, optimizer) training configs
+│   ├── scripts/          # ready-to-run shell launchers
+│   └── data/             # OpenWebText preparation (nanoGPT-style)
+└── LLaMA/        # LLaMA (60M / 135M / 350M / 1B) pre-training pipeline
+    ├── optimizers/       # RMNP_optimizer.py, muon_optimizer.py, *_v2 variants
+    ├── configs/          # llama_{60m,135m,350m,1b}.json model configs
+    ├── scripts/          # per-(size, optimizer) launchers
+    └── torchrun_main.py  # distributed training entrypoint
+```
+
+Both sub-projects ship three optimizer baselines — **AdamW**, **Muon**, **RMNP** — so that results can be reproduced under matched data, schedule, and hyperparameters.
+
+## Quick Start
+
+Each sub-project is self-contained. Refer to its local README for full environment setup, dataset preparation, and per-script hyperparameters:
+
+- [`GPT-2/README.md`](GPT-2/README.md) — GPT-2 pre-training on OpenWebText (local + streaming).
+- [`LLaMA/README.md`](LLaMA/README.md) — LLaMA pre-training (60M – 1B) with `torchrun`.
+
+Minimal example (GPT-2 Small with RMNP):
+
+```bash
+cd GPT-2
+conda create -n rmnp python=3.12 && conda activate rmnp
+pip install -r requirements.txt
+export HF_TOKEN=...     # for streaming datasets
+export WANDB_API_KEY=...
+bash scripts/run_rmnp_small.sh
+```
+
+Minimal example (LLaMA 60M with RMNP):
+
+```bash
+cd LLaMA
+conda create -n rmnp_llama python=3.9 && conda activate rmnp_llama
+pip install -r requirements_pip.txt
+bash scripts/train_RMNP_60m.sh
+```
+
+## Using the RMNP Optimizer in Your Own Code
+
+```python
+from LLaMA.optimizers.RMNP_optimizer import get_rmnp_optimizer
+
+optimizer = get_rmnp_optimizer(
+    model,
+    lr_rmnp=5e-3,      # learning rate for 2D+ params (RMNP branch)
+    lr_adam=1e-3,      # learning rate for 1D/0D params (AdamW branch)
+    weight_decay=0.1,
+    momentum=0.95,
+    beta=0.95,
+)
+```
+
+Following Muon's convention, 1D parameters (biases, LayerNorm scales) and embedding/head matrices are handled by an AdamW branch, while all other 2D+ weight matrices use the RMNP update.
+
+## Citation
+
+If you find this work useful, please cite:
+
+```bibtex
+@article{deng2026rmnp,
+  title   = {RMNP: Row-Momentum Normalized Preconditioning for Scalable Matrix-Based Optimization},
+  author  = {Deng, Shenyang and Ouyang, Zhuoli and Pang, Tianyu and Liu, Zihang and Jin, Ruochen and Yu, Shuhua and Yang, Yaoqing},
+  journal = {arXiv preprint arXiv:2603.20527},
+  year    = {2026}
+}
+```
+
+## Acknowledgements
+
+This repository is built upon [MARS](https://github.com/AGI-Arena/MARS) and [GaLore](https://github.com/jiaweizzhao/GaLore). We thank the authors for open-sourcing their codebases.
+
