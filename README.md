@@ -57,9 +57,30 @@ and aggregate across rows to obtain $r_{\text{avg}}$, $r_{\min}$, $r_{\max}$. Av
 
 ## Main Results
 
+### Perplexity
+
 ![Final validation perplexity (lower is better) across three pretraining settings. **Left:** LLaMA on C4 — 60M (1B tokens), 130M (2B), 350M (6B), 1B (9B). **Middle:** GPT-2 on FineWeb-Edu-100B — Small (125M), Medium (355M), Large (770M), XL (1.5B). **Right:** GPT-2 on OpenWebText — Small (5B tokens), Medium (10B), Large (20B). RMNP attains the lowest perplexity in every cell.](assets/main_results_bar.png)
 
-RMNP matches or exceeds Muon's perplexity across **every** model scale and dataset, while requiring an order of magnitude less preconditioner-operator time (~13×–44× speedup on GPT-2 60M–1.5B). The gap widens with scale, consistent with the diagonal-dominance trend reported above.
+RMNP matches or exceeds Muon's perplexity across **every** model scale and dataset, consistent with the diagonal-dominance trend reported above.
+
+### Preconditioner Wall-Clock Time
+
+![Wall-clock time for 100 preconditioning steps of RMNP vs. Muon as GPT-2 model size scales from 60M to 1.5B.](assets/time_scaling.png)
+
+**Table 2.** Efficiency comparison between Muon and RMNP's preconditioning cost on GPT-2 models. Time measured over 100 steps with batch size 16 on a single RTX Pro 6000 GPU.
+
+| Size | Muon — Time (s) | RMNP — Time (s) | Speedup (×) |
+|:-----|----------------:|----------------:|------------:|
+| 60M  |  1.480 | **0.115** | 12.9 |
+| 125M |  2.975 | **0.201** | 14.8 |
+| 200M |  4.140 | **0.260** | 15.9 |
+| 355M |  7.380 | **0.401** | 18.4 |
+| 500M | 15.720 | **0.462** | 34.0 |
+| 770M | 27.070 | **0.611** | 44.3 |
+| 1.3B | 30.570 | **0.783** | 39.0 |
+| 1.5B | 36.650 | **0.855** | 42.9 |
+
+RMNP's row normalization is **13×–44× faster** than Muon's Newton–Schulz orthogonalization, and the gap widens with model size: as Newton–Schulz becomes the dominant bottleneck at scale, RMNP's lightweight preconditioner becomes increasingly attractive for very large models.
 
 ## Repository Layout
 
