@@ -55,6 +55,12 @@ and aggregate across rows to obtain $r_{\text{avg}}$, $r_{\min}$, $r_{\max}$. Av
 
 **Key idea.** When $M_t$ is row-diagonally dominant (empirically observed and strengthening with scale), the leading singular directions of $M_t$ align with its rows, and the orthogonal factor from $M_t = U\Sigma V^\top$ satisfies $U V^\top \approx \mathrm{RowNormalize}(M_t)$. RMNP therefore matches Muon's update direction while replacing the iterative NS polynomial (multiple matmuls per step) with a single elementwise normalization — yielding lower wall-clock cost and friendlier scaling to large hidden dimensions.
 
+## Main Results
+
+![Final validation perplexity (lower is better) across three pretraining settings. **Left:** LLaMA on C4 — 60M (1B tokens), 130M (2B), 350M (6B), 1B (9B). **Middle:** GPT-2 on FineWeb-Edu-100B — Small (125M), Medium (355M), Large (770M), XL (1.5B). **Right:** GPT-2 on OpenWebText — Small (5B tokens), Medium (10B), Large (20B). RMNP attains the lowest perplexity in every cell.](assets/main_results_bar.png)
+
+RMNP matches or exceeds Muon's perplexity across **every** model scale and dataset, while requiring an order of magnitude less preconditioner-operator time (~13×–44× speedup on GPT-2 60M–1.5B). The gap widens with scale, consistent with the diagonal-dominance trend reported above.
+
 ## Repository Layout
 
 ```
