@@ -75,28 +75,22 @@ Both sub-projects ship three optimizer baselines — **AdamW**, **Muon**, **RMNP
 
 ## Quick Start
 
-Each sub-project is self-contained. Refer to its local README for full environment setup, dataset preparation, and per-script hyperparameters:
+For environment setup and dependency installation, please follow the upstream [MARS](https://github.com/AGI-Arena/MARS) repository — our environment is fully compatible with it. Each sub-project is otherwise self-contained; see its local README for dataset preparation and per-script hyperparameters:
 
 - [`GPT-2/README.md`](GPT-2/README.md) — GPT-2 pre-training on OpenWebText (local + streaming).
 - [`LLaMA/README.md`](LLaMA/README.md) — LLaMA pre-training (60M – 1B) with `torchrun`.
 
-Minimal example (GPT-2 Small with RMNP):
+Once the environment is ready, launch a run with:
 
 ```bash
+# GPT-2 Small with RMNP
 cd GPT-2
-conda create -n rmnp python=3.12 && conda activate rmnp
-pip install -r requirements.txt
-export HF_TOKEN=...     # for streaming datasets
+export HF_TOKEN=...        # for streaming datasets
 export WANDB_API_KEY=...
 bash scripts/run_rmnp_small.sh
-```
 
-Minimal example (LLaMA 60M with RMNP):
-
-```bash
+# LLaMA 60M with RMNP
 cd LLaMA
-conda create -n rmnp_llama python=3.9 && conda activate rmnp_llama
-pip install -r requirements_pip.txt
 bash scripts/train_RMNP_60m.sh
 ```
 
