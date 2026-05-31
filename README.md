@@ -134,20 +134,22 @@ A standalone optimizer package lives at [`rmnp/`](rmnp/). Install via PyPI:
 pip install rmnp
 ```
 
-Use it like any `torch.optim.Optimizer`. Following Muon's convention, route 2D weight matrices through `RMNP` and keep 1D/0D parameters plus the embedding/head on AdamW:
+Use it like any `torch.optim.Optimizer`. Following Muon's convention, route all 2D weight matrices through `RMNP` and 1D/0D parameters (biases, LayerNorm scales) through AdamW:
 
 ```python
 import torch
 from rmnp import RMNP
 
 matrix_params = [p for p in model.parameters() if p.ndim >= 2]
-other_params  = [p for p in model.parameters() if p.ndim < 2]
+other_params  = [p for p in model.parameters() if p.ndim <  2]
 
 rmnp_opt  = RMNP(matrix_params, lr=2e-2, momentum=0.95, weight_decay=0.0)
 adamw_opt = torch.optim.AdamW(other_params, lr=3e-4, weight_decay=0.1)
 
 # In the training loop: call .step() on both, .zero_grad() on both.
 ```
+
+> Embeddings and the LM head (both 2D) are placed on RMNP under this default, matching our GPT-2 setup ([`GPT-2/MARS/opt.py`](GPT-2/MARS/opt.py)). To exclude them — as in our LLaMA setup — simply filter them out of `matrix_params` and add them to `other_params`.
 
 Distributed training works out of the box: when `WORLD_SIZE > 1`, updates are sharded across ranks and synchronized via `all_reduce`.
 ## Citation
