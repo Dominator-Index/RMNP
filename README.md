@@ -89,9 +89,25 @@ RMNP/
 
 Both sub-projects ship three optimizer baselines — **AdamW**, **Muon**, **RMNP** — so that results can be reproduced under matched data, schedule, and hyperparameters.
 
+## Installation
+
+We recommend Python **3.12** with CUDA-capable GPUs. Create a fresh environment and install the pinned dependencies:
+
+```bash
+git clone https://github.com/Dominator-Index/RMNP.git
+cd RMNP
+
+conda create -n rmnp python=3.12 -y
+conda activate rmnp
+
+pip install -r requirements.txt
+```
+
+> `flash-attn` requires a working CUDA toolchain and may take several minutes to build; if it fails, install it separately with `pip install flash-attn --no-build-isolation` after `torch` is in place. The setup is fully compatible with the upstream [MARS](https://github.com/AGI-Arena/MARS) repository, so its install instructions also work.
+
 ## Quick Start
 
-For environment setup and dependency installation, please follow the upstream [MARS](https://github.com/AGI-Arena/MARS) repository — our environment is fully compatible with it. Each sub-project is otherwise self-contained; see its local README for dataset preparation and per-script hyperparameters:
+Each sub-project is self-contained; see its local README for dataset preparation and per-script hyperparameters:
 
 - [`GPT-2/README.md`](GPT-2/README.md) — GPT-2 pre-training on **OpenWebText** (Small / Medium / Large) and **FineWeb-Edu** (Small / Medium / Large / XL).
 - [`LLaMA/README.md`](LLaMA/README.md) — LLaMA pre-training (60M – 1B) with `torchrun`.
@@ -112,9 +128,16 @@ bash scripts/train_RMNP_60m.sh
 
 ## Using the RMNP Optimizer in Your Own Code
 
-A minimal, dependency-free implementation lives at [`rmnp/`](rmnp/). Following Muon's convention, route 2D weight matrices through `RMNP` and keep 1D/0D parameters (biases, LayerNorm) plus the embedding/head on AdamW:
+A minimal, dependency-free implementation lives at [`rmnp/`](rmnp/). For optimizer-only use (no need to clone this repo), install via PyPI:
+
+```bash
+pip install rmnp
+```
+
+Following Muon's convention, route 2D weight matrices through `RMNP` and keep 1D/0D parameters (biases, LayerNorm) plus the embedding/head on AdamW:
 
 ```python
+import torch
 from rmnp import RMNP
 
 # Split parameters: 2D weight matrices -> RMNP, the rest -> AdamW

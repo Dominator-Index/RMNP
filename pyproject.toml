@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rmnp"
+version = "0.1.0"
+description = "RMNP: Row-Momentum Normalized Preconditioning optimizer for scalable matrix-based optimization."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "Shenyang Deng", email = "Collapsar0000@126.com" },
+  { name = "Zhuoli Ouyang" },
+  { name = "Tianyu Pang" },
+  { name = "Zihang Liu" },
+  { name = "Ruochen Jin" },
+  { name = "Shuhua Yu" },
+  { name = "Yaoqing Yang" },
+]
+keywords = ["optimizer", "deep-learning", "pytorch", "muon", "preconditioning", "transformer"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = ["torch>=2.0"]
+
+[project.urls]
+Homepage = "https://github.com/Dominator-Index/RMNP"
+Repository = "https://github.com/Dominator-Index/RMNP"
+Paper = "https://arxiv.org/abs/2603.20527"
+Issues = "https://github.com/Dominator-Index/RMNP/issues"
+
+[tool.setuptools.packages.find]
+include = ["rmnp*"]
+exclude = ["GPT-2*", "LLaMA*", "assets*", "scripts*", "config*", "configs*", "data*"]
