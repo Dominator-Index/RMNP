@@ -65,22 +65,11 @@ RMNP matches or exceeds Muon's perplexity across **every** model scale and datas
 
 ### Preconditioner Wall-Clock Time
 
-![Wall-clock time for 100 preconditioning steps of RMNP vs. Muon as GPT-2 model size scales from 60M to 1.5B.](assets/time_scaling.png)
+<p align="center">
+  <img src="assets/time_scaling.png" alt="Wall-clock time for 100 preconditioning steps of RMNP vs. Muon as GPT-2 model size scales from 60M to 1.5B." width="55%">
+</p>
 
-**Table 2.** Efficiency comparison between Muon and RMNP's preconditioning cost on GPT-2 models. Time measured over 100 steps with batch size 16 on a single RTX Pro 6000 GPU.
-
-| Size | Muon — Time (s) | RMNP — Time (s) | Speedup (×) |
-|:-----|----------------:|----------------:|------------:|
-| 60M  |  1.480 | **0.115** | 12.9 |
-| 125M |  2.975 | **0.201** | 14.8 |
-| 200M |  4.140 | **0.260** | 15.9 |
-| 355M |  7.380 | **0.401** | 18.4 |
-| 500M | 15.720 | **0.462** | 34.0 |
-| 770M | 27.070 | **0.611** | 44.3 |
-| 1.3B | 30.570 | **0.783** | 39.0 |
-| 1.5B | 36.650 | **0.855** | 42.9 |
-
-RMNP's row normalization is **13×–44× faster** than Muon's Newton–Schulz orthogonalization, and the gap widens with model size: as Newton–Schulz becomes the dominant bottleneck at scale, RMNP's lightweight preconditioner becomes increasingly attractive for very large models.
+RMNP's row normalization is **13×–44× faster** than Muon's Newton–Schulz orthogonalization on GPT-2 models from 60M to 1.5B (measured over 100 steps with batch size 16 on a single RTX Pro 6000 GPU), and the gap widens with model size: as Newton–Schulz becomes the dominant bottleneck at scale, RMNP's lightweight preconditioner becomes increasingly attractive for very large models.
 
 ## Repository Layout
 
