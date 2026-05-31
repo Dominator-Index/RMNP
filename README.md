@@ -28,7 +28,7 @@ This repository contains the official implementation of **RMNP (Row-Momentum Nor
         &\textbf{for } t=1 \text{ to } T \text{ do} \\
         &\quad G_t \leftarrow \nabla_W f_t(W_{t-1}) \\
         &\quad M_t \leftarrow \mu\, M_{t-1} + (1-\mu)\, G_t \\
-        &\quad \color{blue}{R_t \leftarrow \operatorname{RowNormalize}(M_t;\ \epsilon)} \\
+        &\quad \color{blue}{R_t \leftarrow \mathrm{RowNormalize}(M_t;\ \epsilon)} \\
         &\quad W_t \leftarrow W_{t-1} - \eta\, R_t \\
         &\textbf{end for}
     \end{aligned}
@@ -36,12 +36,12 @@ This repository contains the official implementation of **RMNP (Row-Momentum Nor
 
 with
 ```math
-\bigl[\operatorname{RowNormalize}(M;\epsilon)\bigr]_{i,:} \;=\; \frac{M_{i,:}}{\lVert M_{i,:} \rVert_2 + \epsilon}.
+\bigl[\mathrm{RowNormalize}(M;\epsilon)\bigr]_{i,:} \;=\; \frac{M_{i,:}}{\lVert M_{i,:} \rVert_2 + \epsilon}.
 ```
 
 ### Diagonal-Dominance Monitoring
 
-To verify the condition under which $\operatorname{RowNormalize}(M_t) \approx U V^\top$ holds, we monitor the row-wise diagonal-dominance ratio of the Gram matrix $V_t V_t^\top$ throughout training. For row $i$ we define
+To verify the condition under which $\mathrm{RowNormalize}(M_t) \approx U V^\top$ holds, we monitor the row-wise diagonal-dominance ratio of the Gram matrix $V_t V_t^\top$ throughout training. For row $i$ we define
 
 ```math
 r_i \;=\; \frac{\bigl|(V_t V_t^\top)_{ii}\bigr|}{\tfrac{1}{m-1}\sum_{j\neq i}\bigl|(V_t V_t^\top)_{ij}\bigr|},
@@ -53,7 +53,7 @@ and aggregate across rows to obtain $r_{\text{avg}}$, $r_{\min}$, $r_{\max}$. Av
 
 **Observations.** Across all six configurations and the full training trajectory: $\overline{r}_{\min}$ stays comfortably above the $y=1$ threshold, $\overline{r}_{\text{avg}}$ consistently exceeds $5$, and $\overline{r}_{\max}$ reaches the order of tens. More importantly, **diagonal dominance strengthens monotonically as model size grows** — GPT-2 Large and LLaMA 350M exhibit visibly higher $\overline{r}$ across all three statistics than their smaller counterparts. This indicates that the row-wise block-diagonal dominance underlying RMNP is not an artefact of small scale; it becomes *more* pronounced as models scale, making RMNP an increasingly favorable replacement for Muon's NS iteration at scale.
 
-**Key idea.** When $M_t$ is row-diagonally dominant (empirically observed and strengthening with scale), the leading singular directions of $M_t$ align with its rows, and the orthogonal factor from $M_t = U\Sigma V^\top$ satisfies $U V^\top \approx \operatorname{RowNormalize}(M_t)$. RMNP therefore matches Muon's update direction while replacing the iterative NS polynomial (multiple matmuls per step) with a single elementwise normalization — yielding lower wall-clock cost and friendlier scaling to large hidden dimensions.
+**Key idea.** When $M_t$ is row-diagonally dominant (empirically observed and strengthening with scale), the leading singular directions of $M_t$ align with its rows, and the orthogonal factor from $M_t = U\Sigma V^\top$ satisfies $U V^\top \approx \mathrm{RowNormalize}(M_t)$. RMNP therefore matches Muon's update direction while replacing the iterative NS polynomial (multiple matmuls per step) with a single elementwise normalization — yielding lower wall-clock cost and friendlier scaling to large hidden dimensions.
 
 ## Repository Layout
 
