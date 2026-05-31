@@ -112,18 +112,26 @@ bash scripts/train_RMNP_60m.sh
 
 ## Using the RMNP Optimizer in Your Own Code
 
-```python
-from LLaMA.optimizers.RMNP_optimizer import get_rmnp_optimizer
+A minimal, dependency-free implementation lives at [`rmnp/`](rmnp/). Following Muon's convention, route 2D weight matrices through `RMNP` and keep 1D/0D parameters (biases, LayerNorm) plus the embedding/head on AdamW:
 
-optimizer = get_rmnp_optimizer(
-    model,
-    lr_rmnp=5e-3,      # learning rate for 2D+ params (RMNP branch)
-    lr_adam=1e-3,      # learning rate for 1D/0D params (AdamW branch)
-    weight_decay=0.1,
-    momentum=0.95,
-    beta=0.95,
-)
+```python
+from rmnp import RMNP
+
+# Split parameters: 2D weight matrices -> RMNP, the rest -> AdamW
+matrix_params = [p for n, p in model.named_parameters()
+                 if p.requires_grad and p.ndim >= 2
+                 and not n.endswith(("wte.weight", "lm_head.weight"))]
+other_params  = [p for n, p in model.named_parameters()
+                 if p.requires_grad and p not in matrix_params]
+
+rmnp_opt  = RMNP(matrix_params, lr=2e-2, momentum=0.95,
+                 nesterov=True, weight_decay=0.0)
+adamw_opt = torch.optim.AdamW(other_params, lr=3e-4, weight_decay=0.1)
+
+# Standard training loop: step both optimizers each iteration.
 ```
+
+`RMNP` also supports distributed training out of the box: when `WORLD_SIZE > 1`, the per-step update is sharded across ranks and synchronized via `all_reduce`.
 ## Citation
 
 If you find this work useful, please cite:
