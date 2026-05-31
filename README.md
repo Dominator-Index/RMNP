@@ -77,7 +77,7 @@ Both sub-projects ship three optimizer baselines — **AdamW**, **Muon**, **RMNP
 
 For environment setup and dependency installation, please follow the upstream [MARS](https://github.com/AGI-Arena/MARS) repository — our environment is fully compatible with it. Each sub-project is otherwise self-contained; see its local README for dataset preparation and per-script hyperparameters:
 
-- [`GPT-2/README.md`](GPT-2/README.md) — GPT-2 pre-training on OpenWebText (local + streaming).
+- [`GPT-2/README.md`](GPT-2/README.md) — GPT-2 pre-training on **OpenWebText** (Small / Medium / Large) and **FineWeb-Edu** (Small / Medium / Large / XL).
 - [`LLaMA/README.md`](LLaMA/README.md) — LLaMA pre-training (60M – 1B) with `torchrun`.
 
 Once the environment is ready, launch a run with:
