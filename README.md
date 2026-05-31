@@ -108,9 +108,6 @@ optimizer = get_rmnp_optimizer(
     beta=0.95,
 )
 ```
-
-Following Muon's convention, 1D parameters (biases, LayerNorm scales) and embedding/head matrices are handled by an AdamW branch, while all other 2D+ weight matrices use the RMNP update.
-
 ## Citation
 
 If you find this work useful, please cite:
