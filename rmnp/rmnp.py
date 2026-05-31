@@ -64,7 +64,10 @@ class RMNP(torch.optim.Optimizer):
 
     @torch.no_grad()
     def step(self, closure=None):
-        loss = closure() if closure is not None else None
+        loss = None
+        if closure is not None:
+            with torch.enable_grad():
+                loss = closure()
 
         for group in self.param_groups:
             lr = group['lr']
