@@ -2,9 +2,9 @@
 cd "$(dirname "$0")/.." || exit 1
 
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1,2,3}
-GPUS=${GPUS:-4}
+GPUS=${GPUS:-8}
 BATCH_SIZE=${BATCH_SIZE:-15}
-GRAD_ACC=${GRAD_ACC:-8}
+GRAD_ACC=${GRAD_ACC:-4}
 
 LR=${LR:-3e-3}
 MUON_LR=${MUON_LR:-2e-2}
@@ -30,7 +30,7 @@ LOG_FILE="${OUTPUT_DIR}/${RUN_NAME}_$(date +%Y%m%d_%H%M%S).log"
 echo "muon-small lr=${LR} mlr=${MUON_LR} wd=${WD} iters=${MAX_ITERS} gpus=${GPUS}" | tee ${LOG_FILE}
 
 torchrun --standalone --nproc_per_node=${GPUS} \
-    MARS/train_muon_streaming.py \
+    RMNP/train_muon_streaming.py \
     config/train_gpt2_small_muon_streaming.py \
     --batch_size=${BATCH_SIZE} \
     --gradient_accumulation_steps=${GRAD_ACC} \

@@ -17,10 +17,10 @@ parser.add_argument("--eval_bsz", type=int, default=100)
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--cpu", action="store_true")
 parser.add_argument("--cuda", type=str, default="0")
-parser.add_argument('--lr', default=0.02, type=float, help='learning rate (matrix lr for muon/rnnps)')
+parser.add_argument('--lr', default=0.02, type=float, help='learning rate (matrix lr for muon/rmnp)')
 parser.add_argument('--adamw_lr', default=0.003, type=float, help='learning rate for adamw (1D params)')
 parser.add_argument('--resume', '-r', action='store_true')
-parser.add_argument('--optim', '-m', type=str, choices=["adam", "adamw", "muon", "rnnps"], default='muon')
+parser.add_argument('--optim', '-m', type=str, choices=["adam", "adamw", "muon", "rmnp"], default='muon')
 parser.add_argument('--net', '-n', type=str, default="resnet18")
 parser.add_argument('--wd', default=0., type=float, help='weight decay')
 parser.add_argument('--Nepoch', default=200, type=int)
@@ -148,7 +148,7 @@ betas = (args.beta1, args.beta2)
 
 # Optimizer setup
 from optimizers.muon import Muon
-from optimizers.rnnps import RNNPS
+from optimizers.rmnp import RMNP
 from opt import CombinedOptimizer
 from optimizers.adamw import AdamW
 
@@ -160,8 +160,8 @@ elif args.optim == 'muon':
     optimizer = CombinedOptimizer(model.parameters(), [AdamW, Muon],
                                   [{'lr': args.adamw_lr, 'betas': betas, 'weight_decay': args.wd},
                                    {'lr': args.lr, 'weight_decay': 0.}])
-elif args.optim == 'rnnps':
-    optimizer = CombinedOptimizer(model.parameters(), [AdamW, RNNPS],
+elif args.optim == 'rmnp':
+    optimizer = CombinedOptimizer(model.parameters(), [AdamW, RMNP],
                                   [{'lr': args.adamw_lr, 'betas': betas, 'weight_decay': args.wd},
                                    {'lr': args.lr, 'weight_decay': 0.}])
 
@@ -234,7 +234,7 @@ for epoch in range(1, args.Nepoch + 1):
                     dd_log["dd_ratio/global/ratio_to_avg_min"] = sum(all_ratio_to_avg_min) / n
                     dd_log["dd_ratio/global/ratio_to_avg_max"] = sum(all_ratio_to_avg_max) / n
             else:
-                # For RNNPS/others: compute DD on raw gradients (no internal DD available)
+                # For RMNP/others: compute DD on raw gradients (no internal DD available)
                 dd_log = compute_all_dd_metrics(model)
 
         train_loss += loss.item()

@@ -76,12 +76,12 @@ RMNP's row normalization is **13×–44× faster** than Muon's Newton–Schulz o
 ```
 RMNP/
 ├── GPT-2/        # GPT-2 (125M / 355M / 770M / XL) pre-training pipeline
-│   ├── MARS/             # model & training entrypoints (train_{adamw,muon,rmnp}.py)
+│   ├── RMNP/             # model & training entrypoints (train_{adamw,muon,rmnp}.py)
 │   ├── config/           # per-(size, optimizer) training configs
 │   ├── scripts/          # ready-to-run shell launchers
 │   └── data/             # OpenWebText preparation (nanoGPT-style)
 └── LLaMA/        # LLaMA (60M / 135M / 350M / 1B) pre-training pipeline
-    ├── optimizers/       # RMNP_optimizer.py, muon_optimizer.py, *_v2 variants
+    ├── optimizers/       # RMNP_optimizer.py, muon_optimizer.py
     ├── configs/          # llama_{60m,135m,350m,1b}.json model configs
     ├── scripts/          # per-(size, optimizer) launchers
     └── torchrun_main.py  # distributed training entrypoint

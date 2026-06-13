@@ -1,10 +1,10 @@
 wandb_log = True
 wandb_project = 'mars-fw'
-wandb_run_name='gpt2-xl-rmnp-streaming-fw-100k'
+wandb_run_name='gpt2-xl-rmnp-streaming-fw-50k'
 
-batch_size = 5
+batch_size = 15
 block_size = 1024
-gradient_accumulation_steps = 12
+gradient_accumulation_steps = 4
 
 n_layer = 48
 n_head = 25
@@ -13,8 +13,8 @@ dropout = 0.0
 bias = False
 scale_attn_by_inverse_layer_idx = True
 
-max_iters = 100000
-lr_decay_iters = 100000
+max_iters = 50000
+lr_decay_iters = 50000
 
 eval_interval = 1000
 eval_iters = 200
@@ -31,7 +31,7 @@ beta2 = 0.95
 grad_clip = 1.0
 
 decay_lr = True
-warmup_iters = 2000
+warmup_iters = 5000
 min_lr = 1e-5
 schedule = 'cosine'
 compile = True
@@ -42,4 +42,4 @@ streaming_timeout = 7200
 streaming_max_retries = 10
 streaming_dataset = "karpathy/fineweb-edu-100b-shuffle"
 
-out_dir = 'out_xl_rmnp_streaming_fw_100k'
+out_dir = 'out_xl_rmnp_streaming_fw_50k'

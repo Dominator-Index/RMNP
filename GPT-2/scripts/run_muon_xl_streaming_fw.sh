@@ -15,14 +15,14 @@ export HF_TOKEN="${HF_TOKEN:-}"
 # Or set CUDA_VISIBLE_DEVICES environment variable before running
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-2,3,4,5,6,7}
 # Default parameters
-BATCH_SIZE=${BATCH_SIZE:-10}
-GRAD_ACC=${GRAD_ACC:-8}
-GPUS=${GPUS:-6}
+BATCH_SIZE=${BATCH_SIZE:-15}
+GRAD_ACC=${GRAD_ACC:-4}
+GPUS=${GPUS:-8}
 # Global batch size to maintain (for auto-calculation of GRAD_ACC)
 GLOBAL_BATCH_SIZE=${GLOBAL_BATCH_SIZE:-480}
 
 # Auto-calculate GRAD_ACC if GRAD_ACC is default value and GPUS differs from 4
-if [ "$GRAD_ACC" == "12" ] && [ "$GPUS" != "4" ]; then
+if [ "$GRAD_ACC" == "4" ] && [ "$GPUS" != "8" ]; then
   GRAD_ACC=$((GLOBAL_BATCH_SIZE / (BATCH_SIZE * GPUS)))
   AUTO_CALC=true
 else
@@ -77,7 +77,7 @@ echo "  LOG_FILE: ${LOG_FILE}" | tee -a ${LOG_FILE}
 echo "" | tee -a ${LOG_FILE}
 # Run training
 torchrun --standalone --nproc_per_node=${GPUS} \
-      MARS/train_muon_streaming_fw.py \
+      RMNP/train_muon_streaming_fw.py \
       config/train_gpt2_xl_muon_streaming_fw.py \
       --batch_size=${BATCH_SIZE} \
       --gradient_accumulation_steps=${GRAD_ACC} \

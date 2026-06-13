@@ -2,9 +2,9 @@
 cd "$(dirname "$0")/.." || exit 1
 
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1,2,3}
-GPUS=${GPUS:-4}
-BATCH_SIZE=${BATCH_SIZE:-60}
-GRAD_ACC=${GRAD_ACC:-2}
+GPUS=${GPUS:-8}
+BATCH_SIZE=${BATCH_SIZE:-15}
+GRAD_ACC=${GRAD_ACC:-4}
 
 LR=${LR:-3e-4}
 BETA1=${BETA1:-0.9}
@@ -28,7 +28,7 @@ LOG_FILE="${OUTPUT_DIR}/${RUN_NAME}_$(date +%Y%m%d_%H%M%S).log"
 echo "adamw-medium lr=${LR} wd=${WD} iters=${MAX_ITERS} gpus=${GPUS}" | tee ${LOG_FILE}
 
 torchrun --standalone --nproc_per_node=${GPUS} \
-    MARS/train_adamw_streaming.py \
+    RMNP/train_adamw_streaming.py \
     config/train_gpt2_medium_adamw_streaming.py \
     --batch_size=${BATCH_SIZE} \
     --gradient_accumulation_steps=${GRAD_ACC} \

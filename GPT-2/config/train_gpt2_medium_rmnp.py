@@ -1,10 +1,10 @@
 wandb_log = True
 wandb_project = 'rmnp'
-wandb_run_name='gpt2-medium-rmnp-100k'
+wandb_run_name='gpt2-medium-rmnp-20k'
 
 batch_size = 15
 block_size = 1024
-gradient_accumulation_steps = 8
+gradient_accumulation_steps = 4
 
 n_layer = 24
 n_head = 16
@@ -14,8 +14,8 @@ bias = False
 scale_attn_by_inverse_layer_idx = True
 
 # this makes total number of tokens be ~50B
-max_iters = 100000
-lr_decay_iters = 100000
+max_iters = 20000
+lr_decay_iters = 20000
 
 # eval stuff
 eval_interval = 1000
@@ -33,9 +33,9 @@ beta2 = 0.95
 grad_clip = 1.0 # clip gradients at this value, or disable if == 0.0
 # learning rate decay settings
 decay_lr = True # whether to decay the learning rate
-warmup_iters = 10000 # how many steps to warm up for
+warmup_iters = 2000 # how many steps to warm up for
 min_lr = 6e-5
 
 compile = True
 
-out_dir = 'out_medium_rmnp_100k'
+out_dir = 'out_medium_rmnp_20k'

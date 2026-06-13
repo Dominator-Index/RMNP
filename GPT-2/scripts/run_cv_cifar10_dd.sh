@@ -29,7 +29,7 @@ ADAMW_LR="${ADAMW_LR:-0.006}"
 WD="0.0"
 WANDB_NAME="${DATASET}_${NET}_${OPTIM}_lr${LR}_alr${ADAMW_LR}_dd"
 
-python MARS/train_CV_dd.py \
+python RMNP/train_CV_dd.py \
     --cuda "${CUDA_VISIBLE_DEVICES}" \
     --dataset ${DATASET} \
     --net ${NET} \

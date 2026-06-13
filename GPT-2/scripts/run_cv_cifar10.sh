@@ -29,7 +29,7 @@ OPTIM="adamw"
 LR="0.002"
 WD="0.01"
 WANDB_NAME="${DATASET}_${NET}_${OPTIM}_lr${LR}_bs${TRAIN_BSZ}_wd${WD}"
-python MARS/train_CV.py \
+python RMNP/train_CV.py \
     --cuda "${CUDA_DEVICES}" \
     --dataset ${DATASET} \
     --net ${NET} \
@@ -57,7 +57,7 @@ LR="0.04"
 ADAMW_LR="0.006"
 WD="0.0"
 WANDB_NAME="${DATASET}_${NET}_${OPTIM}_lr${LR}_alr${ADAMW_LR}_bs${TRAIN_BSZ}_wd${WD}"
-python MARS/train_CV.py \
+python RMNP/train_CV.py \
     --cuda "${CUDA_DEVICES}" \
     --dataset ${DATASET} \
     --net ${NET} \
@@ -81,12 +81,12 @@ python MARS/train_CV.py \
 # RMNP (mlr=0.006, alr=0.006, best=94.33%)
 # ============================================
 echo "========== RMNP =========="
-OPTIM="rnnps"
+OPTIM="rmnp"
 LR="0.006"
 ADAMW_LR="0.006"
 WD="0.0"
 WANDB_NAME="${DATASET}_${NET}_${OPTIM}_lr${LR}_alr${ADAMW_LR}_bs${TRAIN_BSZ}_wd${WD}"
-python MARS/train_CV.py \
+python RMNP/train_CV.py \
     --cuda "${CUDA_DEVICES}" \
     --dataset ${DATASET} \
     --net ${NET} \

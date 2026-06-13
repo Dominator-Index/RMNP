@@ -22,7 +22,7 @@ GPUS=${GPUS:-8}
 GLOBAL_BATCH_SIZE=${GLOBAL_BATCH_SIZE:-480}
 
 # Auto-calculate GRAD_ACC if GRAD_ACC is default value and GPUS differs from 4
-if [ "$GRAD_ACC" == "12" ] && [ "$GPUS" != "4" ]; then
+if [ "$GRAD_ACC" == "4" ] && [ "$GPUS" != "8" ]; then
   GRAD_ACC=$((GLOBAL_BATCH_SIZE / (BATCH_SIZE * GPUS)))
   AUTO_CALC=true
 else
@@ -72,7 +72,7 @@ echo "  LOG_FILE: ${LOG_FILE}" | tee -a ${LOG_FILE}
 echo "" | tee -a ${LOG_FILE}
 # Run training
 torchrun --standalone --nproc_per_node=${GPUS} \
-      MARS/train_rmnp_streaming.py \
+      RMNP/train_rmnp_streaming.py \
       config/train_gpt2_xl_rmnp_streaming_fw.py \
       --batch_size=${BATCH_SIZE} \
       --gradient_accumulation_steps=${GRAD_ACC} \

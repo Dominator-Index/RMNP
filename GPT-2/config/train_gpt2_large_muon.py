@@ -1,10 +1,10 @@
 wandb_log = True
 wandb_project = 'rmnp'
-wandb_run_name='gpt2-large-muon-100k'
+wandb_run_name='gpt2-large-muon-40k'
 
-batch_size = 5
+batch_size = 15
 block_size = 1024
-gradient_accumulation_steps = 24
+gradient_accumulation_steps = 4
 
 n_layer = 36
 n_head = 20
@@ -14,8 +14,8 @@ bias = False
 scale_attn_by_inverse_layer_idx = True
 
 # this makes total number of tokens be ~50B
-max_iters = 100000
-lr_decay_iters = 100000
+max_iters = 40000
+lr_decay_iters = 40000
 
 # eval stuff
 eval_interval = 1000
@@ -33,9 +33,9 @@ beta2 = 0.95
 grad_clip = 1.0 # clip gradients at this value, or disable if == 0.0
 # learning rate decay settings
 decay_lr = True # whether to decay the learning rate
-warmup_iters = 10000 # how many steps to warm up for
+warmup_iters = 4000 # how many steps to warm up for
 min_lr = 1e-5 
 
 compile = True
 
-out_dir = 'out_large_muon_100k'
+out_dir = 'out_large_muon_40k'

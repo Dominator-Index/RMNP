@@ -20,8 +20,6 @@ from optimizers.muon_optimizer_all import get_muon_all_optimizer
 from optimizers.muon_optimizer_all_dd import get_muon_all_optimizer_dd
 from optimizers.RMNP_optimizer import get_rmnp_optimizer
 from optimizers.RMNP_optimizer_all import get_rmnp_all_optimizer
-from optimizers.RMNP_optimizer_v2 import get_rmnp_v2_optimizer
-from optimizers.RMNP_optimizer_all_v2 import get_rmnp_all_v2_optimizer
 from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM
 from transformers import LlamaForCausalLM as HF_LlamaForCausalLM
 
@@ -87,7 +85,7 @@ def parse_args(args):
     parser.add_argument("--continue_from", type=str, default=None) 
     
     # Optimizer selection: muon, RMNP, adamw
-    parser.add_argument("--optimizer", type=str, default="muon", choices=["muon", "muon_all", "RMNP", "rmnp_all", "RMNP_v2", "rmnp_all_v2", "adamw"])
+    parser.add_argument("--optimizer", type=str, default="muon", choices=["muon", "muon_all", "RMNP", "rmnp_all", "adamw"])
 
     parser.add_argument("--gradient_accumulation", type=int, default=None)
     parser.add_argument("--save_dir", type=str, default=None)
@@ -351,35 +349,12 @@ def main(args):
             weight_decay=args.weight_decay
         )
         logger.info("Using RMNP-All optimizer (embed/lm_head included in RMNP)")
-    elif args.optimizer.lower() == "rmnp_v2":
-        # Shape-aware RMNP-v2: transpose tall matrices before row L2 normalization
-        if args.lr_matrix is None or args.lr_adam is None:
-            raise ValueError("RMNP_v2 requires both --lr_matrix and --lr_adam to be specified")
-        optimizer = get_rmnp_v2_optimizer(
-            model,
-            lr_rmnp=args.lr_matrix,
-            lr_adam=args.lr_adam,
-            momentum=0.95,
-            weight_decay=args.weight_decay
-        )
-        logger.info("Using RMNP-v2 optimizer (shape-aware row/column normalization)")
-    elif args.optimizer.lower() == "rmnp_all_v2":
-        if args.lr_matrix is None or args.lr_adam is None:
-            raise ValueError("RMNP_all_v2 requires both --lr_matrix and --lr_adam to be specified")
-        optimizer = get_rmnp_all_v2_optimizer(
-            model,
-            lr_rmnp=args.lr_matrix,
-            lr_adam=args.lr_adam,
-            momentum=0.95,
-            weight_decay=args.weight_decay
-        )
-        logger.info("Using RMNP-All-v2 optimizer (shape-aware; embed/lm_head included)")
     elif args.optimizer.lower() == "adamw":
         lr_adamw = args.lr if args.lr is not None else 0.001
         optimizer = torch.optim.AdamW(trainable_params, lr=lr_adamw, betas=(0.9, 0.95), eps=1e-10, weight_decay=args.weight_decay)
         logger.info(f"Using AdamW optimizer with lr={lr_adamw}")
     else:
-        raise ValueError(f"Optimizer {args.optimizer} not supported. Choose from: muon, muon_all, RMNP, rmnp_all, RMNP_v2, rmnp_all_v2, adamw")
+        raise ValueError(f"Optimizer {args.optimizer} not supported. Choose from: muon, muon_all, RMNP, rmnp_all, adamw")
     
     print('*********************************')
     print(f"Using optimizer: {args.optimizer}")

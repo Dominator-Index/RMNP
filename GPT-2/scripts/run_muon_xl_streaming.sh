@@ -74,7 +74,7 @@ echo "  LOG_FILE: ${LOG_FILE}" | tee -a ${LOG_FILE}
 echo "" | tee -a ${LOG_FILE}
 # Run training
 torchrun --standalone --nproc_per_node=${GPUS} \
-      MARS/train_muon_streaming.py \
+      RMNP/train_muon_streaming.py \
       config/train_gpt2_xl_muon_streaming.py \
       --batch_size=${BATCH_SIZE} \
       --gradient_accumulation_steps=${GRAD_ACC} \

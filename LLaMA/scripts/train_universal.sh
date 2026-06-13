@@ -43,7 +43,7 @@ while [[ $# -gt 0 ]]; do
         --continue_from)    CONTINUE_FROM="$2";     shift 2 ;;
         --compute_dd)       COMPUTE_DD="true";      shift 1 ;;
         --help|-h)
-            echo "Usage: $0 --model_size {60m|135m|350m|1b} --optimizer {muon|muon_all|RMNP|rmnp_all|RMNP_v2|rmnp_all_v2|adamw} --lr_matrix LR --lr_adam LR [options]"
+            echo "Usage: $0 --model_size {60m|135m|350m|1b} --optimizer {muon|muon_all|RMNP|rmnp_all|adamw} --lr_matrix LR --lr_adam LR [options]"
             exit 0 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
@@ -53,7 +53,7 @@ done
 if [[ ! "$MODEL_SIZE" =~ ^(60m|130m|135m|350m|1b)$ ]]; then
     echo "Error: invalid model_size '$MODEL_SIZE'"; exit 1
 fi
-if [[ ! "$OPTIMIZER" =~ ^(muon|muon_all|RMNP|rmnp_all|RMNP_v2|rmnp_all_v2|adamw)$ ]]; then
+if [[ ! "$OPTIMIZER" =~ ^(muon|muon_all|RMNP|rmnp_all|adamw)$ ]]; then
     echo "Error: invalid optimizer '$OPTIMIZER'"; exit 1
 fi
 if [[ "$OPTIMIZER" != "adamw" ]] && [[ -z "$LR_MATRIX" || -z "$LR_ADAM" ]]; then

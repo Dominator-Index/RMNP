@@ -128,11 +128,11 @@ GPUS=4 ./scripts/run_rmnp_medium_streaming.sh
 
 **Using torchrun directly:**
 ```bash
-torchrun --standalone --nproc_per_node=4 \
-    MARS/train_rmnp.py \
+torchrun --standalone --nproc_per_node=8 \
+    RMNP/train_rmnp.py \
     config/train_gpt2_small_rmnp.py \
     --batch_size=15 \
-    --gradient_accumulation_steps=8
+    --gradient_accumulation_steps=4
 ```
 
 ### Training Configuration

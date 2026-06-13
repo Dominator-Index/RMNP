@@ -41,7 +41,7 @@ echo "  RUN_NAME: ${RUN_NAME}" | tee -a ${LOG_FILE}
 echo "" | tee -a ${LOG_FILE}
 
 torchrun --standalone --nproc_per_node=${GPUS} \
-    MARS/train_muon_streaming_test.py \
+    RMNP/train_muon_streaming_test.py \
     config/train_gpt2_small_muon_streaming.py \
     --batch_size=${BATCH_SIZE} \
     --gradient_accumulation_steps=${GRAD_ACC} \

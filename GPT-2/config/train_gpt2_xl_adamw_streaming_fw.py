@@ -2,9 +2,9 @@ wandb_log = True
 wandb_project = 'mars-fw'
 wandb_run_name='gpt2-xl-adamw-streaming-fw-50k'
 
-batch_size = 120
+batch_size = 15
 block_size = 1024
-gradient_accumulation_steps = 1
+gradient_accumulation_steps = 4
 
 n_layer = 48
 n_head = 25
