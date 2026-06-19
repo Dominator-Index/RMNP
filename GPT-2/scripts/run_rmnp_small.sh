@@ -5,4 +5,5 @@ torchrun --standalone --nproc_per_node=8 \
       config/train_gpt2_small_rmnp.py \
       --batch_size=15 \
       --gradient_accumulation_steps=4 \
+      --rmnp_learning_rate=4e-3 \
       --wandb_project=${WANDB_PROJECT}

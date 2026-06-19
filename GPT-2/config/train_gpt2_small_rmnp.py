@@ -25,7 +25,7 @@ log_interval = 10
 optimizer_name = 'rmnp'
 learning_rate = 3e-3 # max learning rate, original=6e-4
 weight_decay = 1e-1
-rmnp_learning_rate = 2e-2
+rmnp_learning_rate = 4e-3
 rmnp_weight_decay = 0.
 beta1 = 0.9
 beta2 = 0.95
