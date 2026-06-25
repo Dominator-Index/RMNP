@@ -69,7 +69,19 @@ source .env
 
 ## Quick Start
 
-The pipeline provides ready-to-use training scripts for different optimizer and model size combinations:
+The pipeline provides ready-to-use training scripts for every optimizer and model size.
+
+### Available Training Scripts
+
+There are five optimizers, and each one has a script for every model size (60M, 135M, 350M, and 1B).
+
+- **AdamW** (baseline): `scripts/train_adamw_<size>.sh`
+- **Muon**: `scripts/train_muon_<size>.sh`
+- **Muon-All** (embedding and lm_head also go through Muon): `scripts/train_muon_all_<size>.sh`
+- **RMNP**: `scripts/train_RMNP_<size>.sh`
+- **RMNP-All** (embedding and lm_head also go through RMNP): `scripts/train_rmnp_all_<size>.sh`
+
+Here `<size>` is `60m`, `135m`, `350m`, or `1b`. Every script streams C4, so no data preparation is needed. The exact command and recipe for each one is in the Running Training Scripts section below, and all of the learning rates are collected in the Hyperparameters Reference table near the end.
 
 ### Data
 
@@ -226,6 +238,19 @@ torchrun --nnodes=2 --nproc_per_node=4 --master_addr=node1 --master_port=29500 .
 ### RMNP
 - **Use:** the same split as Muon, except the matrix step is RMNP. Set `--lr_matrix` and `--lr_adam`. In all of our recipes we keep `--lr_adam` equal to `--lr_matrix`.
 - **`rmnp_all` variant:** it sends the embedding and lm_head through RMNP as well.
+
+## Hyperparameters Reference
+
+Every run shares the same setup. It uses 8 GPUs, a per-GPU batch size of 64, a total batch of 512, a sequence length of 256, and bfloat16. The weight decay is `0.1` and the warmup is 10% of the steps. The learning rates below are the exact values baked into each script.
+
+For Muon and Muon-All, the two numbers are written as `lr` / `matrix_lr`. The first one is the AdamW learning rate on the 1D parameters, and the second one is the matrix learning rate on the 2D weights. For RMNP and RMNP-All we keep the AdamW learning rate equal to the matrix learning rate, so a single number is shown.
+
+| Model | Steps | AdamW `lr` | Muon `lr` / `matrix_lr` | Muon-All `lr` / `matrix_lr` | RMNP `lr` = `matrix_lr` | RMNP-All `lr` = `matrix_lr` |
+|:------|:-----:|:----------:|:-----------------------:|:---------------------------:|:-----------------------:|:---------------------------:|
+| LLaMA 60M  | 10000 | 1e-3 | 1e-3 / 0.01  | 1e-3 / 0.03  | 0.005 | 0.01  |
+| LLaMA 135M | 20000 | 1e-3 | 1e-3 / 0.01  | 1e-3 / 0.01  | 0.03  | 0.02  |
+| LLaMA 350M | 60000 | 1e-3 | 1e-3 / 0.004 | 1e-3 / 0.01  | 0.005 | 0.005 |
+| LLaMA 1B   | 90000 | 6e-4 | 6e-4 / 0.001 | 6e-4 / 0.005 | 0.005 | 0.005 |
 
 ## Troubleshooting
 
