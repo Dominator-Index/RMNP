@@ -169,5 +169,5 @@ This repository is built upon [MARS](https://github.com/AGI-Arena/MARS) and [GaL
 
 ## Contact
 
-Questions and feedback are welcome. Feel free to reach out to Zhuoli Ouyang at oyzl2004@gmail.com or Zhuoli.Ouyang@dartmouth.edu, or to our collaborator Shenyang Deng at shenyang.deng.gr@dartmouth.edu.
+Questions and feedback are welcome. Feel free to email Zhuoli Ouyang at oyzl2004@gmail.com or Zhuoli.Ouyang@dartmouth.edu, or our collaborator Shenyang Deng at shenyang.deng.gr@dartmouth.edu.
 
