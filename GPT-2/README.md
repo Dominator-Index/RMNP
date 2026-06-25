@@ -1,6 +1,6 @@
 # GPT-2 Pre-training with RMNP, Muon, and AdamW Optimizers
 
-A comprehensive PyTorch training pipeline for GPT-2 models with multiple optimizer implementations (RMNP, Muon, AdamW). Supports distributed training across GPT-2 model sizes (Small 125M, Medium 355M, Large 770M).
+A comprehensive PyTorch training pipeline for GPT-2 models with multiple optimizer implementations (RMNP, Muon, AdamW). Supports distributed training across GPT-2 model sizes (Small 125M, Medium 355M, Large 770M, and XL 1.5B on FineWeb-Edu).
 
 ## Environment Setup
 
@@ -82,24 +82,18 @@ The pipeline provides ready-to-use training scripts for different optimizer and 
 
 ### Available Training Scripts
 
-1. **RMNP Optimizer:**
-   - `scripts/run_rmnp_small.sh` - GPT-2 Small (125M)
-   - `scripts/run_rmnp_medium.sh` - GPT-2 Medium (355M)
-   - `scripts/run_rmnp_large.sh` - GPT-2 Large (770M)
+The scripts come in two groups. Every group has an AdamW, a Muon, and an RMNP version.
 
-2. **Muon Optimizer:**
-   - `scripts/run_muon_small.sh` - GPT-2 Small
-   - `scripts/run_muon_medium.sh` - GPT-2 Medium
-   - `scripts/run_muon_large.sh` - GPT-2 Large
+**Streaming (no data prep).** These are the recommended scripts, and they cover every model size.
+- `scripts/run_<opt>_<size>_streaming_owt.sh` streams OpenWebText. It covers Small, Medium, and Large.
+- `scripts/run_<opt>_<size>_streaming_fw.sh` streams FineWeb-Edu-100B. It covers Small, Medium, Large, and **XL (1.5B)**.
 
-3. **AdamW Baseline:**
-   - `scripts/run_adamw_small.sh` - GPT-2 Small
-   - `scripts/run_adamw_medium.sh` - GPT-2 Medium
-   - `scripts/run_adamw_large.sh` - GPT-2 Large
+So, for example, GPT-2 XL on FineWeb-Edu runs with `scripts/run_adamw_xl_streaming_fw.sh`, `scripts/run_muon_xl_streaming_fw.sh`, or `scripts/run_rmnp_xl_streaming_fw.sh`.
 
-4. **Streaming Data:**
-   - `scripts/run_*_streaming_owt.sh` - OpenWebText streaming
-   - `scripts/run_*_streaming_fw.sh` - FineWeb-Edu-100B streaming
+**Pre-tokenized OpenWebText.** These need `python data/openwebtext/prepare.py` first, and they cover Small, Medium, and Large only.
+- `scripts/run_<opt>_<size>.sh` for `<opt>` in `adamw`, `muon`, `rmnp` and `<size>` in `small`, `medium`, `large`.
+
+The exact command for every optimizer, dataset, and size is in the Running Training Scripts section below.
 
 ### Running Training Scripts
 
@@ -269,11 +263,26 @@ Output/
 
 ## Hyperparameters Reference
 
-| Model | Size | lr (AdamW) | lr (Muon) | lr (RMNP) | wd (AdamW) | wd (Muon) | wd (RMNP) |
-|:-----:|:----:|:----------:|:---------:|:----------:|:----------:|:---------:|:----------:|
-| GPT-2 Small | 125M | 6e-4 | 2e-2 | 2e-2 | 1e-1 | 0.0 | 0.0 |
-| GPT-2 Medium | 355M | 3e-4 | 1e-2 | 1e-2 | 1e-1 | 0.0 | 0.0 |
-| GPT-2 Large | 770M | 2e-4 | 6.67e-3 | 6.67e-3 | 1e-1 | 0.0 | 0.0 |
+These are the exact learning rates baked into the configs and scripts. The two datasets use the same AdamW and Muon learning rates, but RMNP uses a slightly different matrix learning rate on each one, so they are listed separately below.
+
+For Muon and RMNP, two learning rates are shown as `lr` / `matrix_lr`. The first one is the AdamW learning rate applied to the 1D parameters (LayerNorm and biases), and the second one is the matrix learning rate applied to the 2D weights. Across every run the weight decay is `1e-1` on the AdamW part and `0.0` on the matrix part, the warmup is 10% of the steps, and the global batch size is 480.
+
+### OpenWebText (`_owt`)
+
+| Model | Size | Steps | AdamW `lr` | Muon `lr` / `matrix_lr` | RMNP `lr` / `matrix_lr` |
+|:------|:----:|:-----:|:----------:|:-----------------------:|:-----------------------:|
+| GPT-2 Small  | 125M | 10000 | 6e-4 | 3e-3 / 2e-2    | 3e-3 / 4e-3 |
+| GPT-2 Medium | 355M | 20000 | 3e-4 | 1.5e-3 / 1e-2  | 1.5e-3 / 5e-3 |
+| GPT-2 Large  | 770M | 40000 | 2e-4 | 1e-3 / 6.67e-3 | 1e-3 / 3e-3 |
+
+### FineWeb-Edu-100B (`_fw`)
+
+| Model | Size | Steps | AdamW `lr` | Muon `lr` / `matrix_lr` | RMNP `lr` / `matrix_lr` |
+|:------|:----:|:-----:|:----------:|:-----------------------:|:-----------------------:|
+| GPT-2 Small  | 125M | 10000 | 6e-4 | 3e-3 / 2e-2    | 3e-3 / 3e-3 |
+| GPT-2 Medium | 355M | 20000 | 3e-4 | 1.5e-3 / 1e-2  | 1.5e-3 / 2e-3 |
+| GPT-2 Large  | 770M | 40000 | 2e-4 | 1e-3 / 6.67e-3 | 1e-3 / 3e-3 |
+| GPT-2 XL     | 1.5B | 50000 | 2e-4 | 1e-3 / 6.67e-3 | 1e-3 / 2e-3 |
 
 ## Troubleshooting
 
