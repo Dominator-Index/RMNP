@@ -97,36 +97,128 @@ The pipeline provides ready-to-use training scripts for different optimizer and 
    - `scripts/run_adamw_medium.sh` - GPT-2 Medium
    - `scripts/run_adamw_large.sh` - GPT-2 Large
 
-4. **Streaming Data (OpenWebText):**
-   - `scripts/run_*_streaming.sh` - OpenWebText streaming
+4. **Streaming Data:**
+   - `scripts/run_*_streaming_owt.sh` - OpenWebText streaming
+   - `scripts/run_*_streaming_fw.sh` - FineWeb-Edu-100B streaming
 
 ### Running Training Scripts
 
-**Basic usage:**
+All commands below assume that you are in the `GPT-2/` directory. First move into it and make the scripts executable.
+
 ```bash
-# Make scripts executable
+cd path/to/RMNP/GPT-2
 chmod +x scripts/*.sh
-
-# Train with RMNP optimizer (GPT-2 Small)
-./scripts/run_rmnp_small.sh
-
-# Train with Muon optimizer (GPT-2 Medium)
-./scripts/run_muon_medium.sh
-
-# Train with streaming data (OpenWebText)
-./scripts/run_rmnp_large_streaming.sh
 ```
 
-**With custom parameters:**
+**Setting hyperparameters.** Each streaming script (`*_streaming_owt.sh` and `*_streaming_fw.sh`) already carries the right defaults for its model size. Just run it and you get the exact recipe listed below. To change a value, put the variable in front of the command. For example, this trains GPT-2 Small with a different learning rate and leaves everything else alone:
+
 ```bash
-# Override default parameters
-LR=3e-3 MAX_ITERS=50000 ./scripts/run_rmnp_small.sh
-
-# Use different number of GPUs
-GPUS=4 ./scripts/run_rmnp_medium_streaming.sh
+LR=2e-3 bash scripts/run_adamw_small_streaming_fw.sh
 ```
 
-**Using torchrun directly:**
+The variables you can set this way are `GPUS`, `BATCH_SIZE`, `GRAD_ACC`, `LR`, `MUON_LR` or `RMNP_LR`, `WD`, `MUON_WD` or `RMNP_WD`, `MAX_ITERS`, `WARMUP`, `GRAD_CLIP`, `DATASET`, `STREAMING_TIMEOUT`, `STREAMING_RETRIES`, and `WANDB_PROJECT`. You can also add normal `--flag=value` arguments after the script name, and they go straight to `torchrun`.
+
+The scripts are grouped by dataset, then optimizer, then model size. The two datasets never mix: OpenWebText scripts end in `_owt`, and FineWeb-Edu-100B scripts end in `_fw`. Every command below spells out its full recipe, so you can copy one, paste it, and run it as is.
+
+---
+
+## Dataset 1: OpenWebText (`_owt`)
+
+These scripts stream OpenWebText, so you do not need to prepare any data first. A pre-tokenized variant also exists, and it is described in the note at the end of this section.
+
+### 1.1 AdamW on OpenWebText
+```bash
+# Small  (125M)
+GPUS=8 BATCH_SIZE=15 LR=6e-4 WD=1e-1 MAX_ITERS=10000 WARMUP=1000 bash scripts/run_adamw_small_streaming_owt.sh
+# Medium (355M)
+GPUS=8 BATCH_SIZE=15 LR=3e-4 WD=1e-1 MAX_ITERS=20000 WARMUP=2000 bash scripts/run_adamw_medium_streaming_owt.sh
+# Large  (770M)
+GPUS=8 BATCH_SIZE=15 LR=2e-4 WD=1e-1 MAX_ITERS=40000 WARMUP=4000 bash scripts/run_adamw_large_streaming_owt.sh
+```
+
+### 1.2 Muon on OpenWebText
+```bash
+# Small  (125M)
+GPUS=8 BATCH_SIZE=15 LR=3e-3   MUON_LR=2e-2    WD=1e-1 MAX_ITERS=10000 WARMUP=1000 bash scripts/run_muon_small_streaming_owt.sh
+# Medium (355M)
+GPUS=8 BATCH_SIZE=15 LR=1.5e-3 MUON_LR=1e-2    WD=1e-1 MAX_ITERS=20000 WARMUP=2000 bash scripts/run_muon_medium_streaming_owt.sh
+# Large  (770M)
+GPUS=8 BATCH_SIZE=15 LR=1e-3   MUON_LR=6.67e-3 WD=1e-1 MAX_ITERS=40000 WARMUP=4000 bash scripts/run_muon_large_streaming_owt.sh
+```
+
+### 1.3 RMNP on OpenWebText
+```bash
+# Small  (125M)
+GPUS=8 BATCH_SIZE=15 LR=3e-3   RMNP_LR=4e-3 WD=1e-1 MAX_ITERS=10000 WARMUP=1000 bash scripts/run_rmnp_small_streaming_owt.sh
+# Medium (355M)
+GPUS=8 BATCH_SIZE=15 LR=1.5e-3 RMNP_LR=5e-3 WD=1e-1 MAX_ITERS=20000 WARMUP=2000 bash scripts/run_rmnp_medium_streaming_owt.sh
+# Large  (770M)
+GPUS=8 BATCH_SIZE=15 LR=1e-3   RMNP_LR=3e-3 WD=1e-1 MAX_ITERS=40000 WARMUP=4000 bash scripts/run_rmnp_large_streaming_owt.sh
+```
+
+> **Pre-tokenized OpenWebText.** If you prefer the pre-tokenized pipeline, first run `python data/openwebtext/prepare.py`. After the data is ready, launch `bash scripts/run_<opt>_<size>.sh`, where `<opt>` is `adamw`, `muon`, or `rmnp`, and `<size>` is `small`, `medium`, or `large`. These scripts wrap a fixed 8-GPU `torchrun` call, and they do not read the environment variables listed above. So if you want to change a hyperparameter here, call `torchrun` directly as shown in the "Using torchrun directly" section.
+
+---
+
+## Dataset 2: FineWeb-Edu-100B (`_fw`)
+
+These scripts stream FineWeb-Edu-100B, so again you do not need to prepare any data. This dataset also adds the **XL (1.5B)** model, which the OpenWebText recipe does not cover.
+
+### 2.1 AdamW on FineWeb-Edu
+```bash
+# Small  (125M)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=6e-4 WD=1e-1 MAX_ITERS=10000 WARMUP=1000 bash scripts/run_adamw_small_streaming_fw.sh
+# Medium (355M)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=3e-4 WD=1e-1 MAX_ITERS=20000 WARMUP=2000 bash scripts/run_adamw_medium_streaming_fw.sh
+# Large  (770M)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=2e-4 WD=1e-1 MAX_ITERS=40000 WARMUP=4000 bash scripts/run_adamw_large_streaming_fw.sh
+# XL     (1.5B)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=2e-4 WD=1e-1 MAX_ITERS=50000 WARMUP=5000 bash scripts/run_adamw_xl_streaming_fw.sh
+```
+
+### 2.2 Muon on FineWeb-Edu
+```bash
+# Small  (125M)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=3e-3   MUON_LR=2e-2    WD=1e-1 MAX_ITERS=10000 WARMUP=1000 bash scripts/run_muon_small_streaming_fw.sh
+# Medium (355M)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=1.5e-3 MUON_LR=1e-2    WD=1e-1 MAX_ITERS=20000 WARMUP=2000 bash scripts/run_muon_medium_streaming_fw.sh
+# Large  (770M)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=1e-3   MUON_LR=6.67e-3 WD=1e-1 MAX_ITERS=40000 WARMUP=4000 bash scripts/run_muon_large_streaming_fw.sh
+# XL     (1.5B)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=1e-3   MUON_LR=6.67e-3 WD=1e-1 MAX_ITERS=50000 WARMUP=5000 bash scripts/run_muon_xl_streaming_fw.sh
+```
+
+### 2.3 RMNP on FineWeb-Edu
+```bash
+# Small  (125M)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=3e-3   RMNP_LR=3e-3 WD=1e-1 MAX_ITERS=10000 WARMUP=1000 bash scripts/run_rmnp_small_streaming_fw.sh
+# Medium (355M)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=1.5e-3 RMNP_LR=2e-3 WD=1e-1 MAX_ITERS=20000 WARMUP=2000 bash scripts/run_rmnp_medium_streaming_fw.sh
+# Large  (770M)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=1e-3   RMNP_LR=3e-3 WD=1e-1 MAX_ITERS=40000 WARMUP=4000 bash scripts/run_rmnp_large_streaming_fw.sh
+# XL     (1.5B)
+GPUS=8 BATCH_SIZE=15 GRAD_ACC=4  LR=1e-3   RMNP_LR=2e-3 WD=1e-1 MAX_ITERS=50000 WARMUP=5000 bash scripts/run_rmnp_xl_streaming_fw.sh
+```
+
+---
+
+> The global batch size stays at 480, which equals `BATCH_SIZE × GPUS × GRAD_ACC`. With `GPUS=8` the defaults already give 480, so you do not need to change anything. If you change `GPUS`, the streaming scripts recompute `GRAD_ACC` for you and keep the global batch at 480. When a GPU runs out of memory, lower `BATCH_SIZE` and raise `GRAD_ACC` by the same factor, so that the product stays the same.
+
+**Examples that override the defaults**
+
+```bash
+# Sweep the RMNP matrix LR on FineWeb-Edu Small
+RMNP_LR=2e-3 bash scripts/run_rmnp_small_streaming_fw.sh
+
+# Run Muon Medium on 4 GPUs. GRAD_ACC is recomputed so the global batch stays 480.
+GPUS=4 bash scripts/run_muon_medium_streaming_owt.sh
+
+# Pass an extra flag straight to torchrun. Anything after the script name is forwarded.
+bash scripts/run_adamw_small_streaming_fw.sh --min_lr=1e-5
+```
+
+### Using torchrun directly
+
 ```bash
 torchrun --standalone --nproc_per_node=8 \
     RMNP/train_rmnp.py \

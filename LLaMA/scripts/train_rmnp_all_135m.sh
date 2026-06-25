@@ -8,9 +8,9 @@ export WANDB_PROJECT="${WANDB_PROJECT:-mars-c4}"
 exec "$SCRIPT_DIR/train_universal.sh" \
     --model_size 135m \
     --optimizer rmnp_all \
-    --num_gpus 4 \
-    --lr_matrix 0.03 \
-    --lr_adam 0.03 \
+    --num_gpus 8 \
+    --lr_matrix 0.02 \
+    --lr_adam 0.02 \
     --num_steps 20000 \
     --batch_size 64 \
     --total_batch_size 512 \

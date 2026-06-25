@@ -1,1 +1,6 @@
 __pycache__/
+
+# Internal debug / test variants — kept locally, not published
+*_dd.py
+*_dd.sh
+*_streaming_test.py

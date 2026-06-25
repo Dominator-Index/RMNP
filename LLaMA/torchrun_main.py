@@ -15,9 +15,9 @@ import torch.distributed as dist
 
 import transformers
 from optimizers.muon_optimizer import get_muon_optimizer
-from optimizers.muon_optimizer_dd import get_muon_optimizer_dd
+# from optimizers.muon_optimizer_dd import get_muon_optimizer_dd
 from optimizers.muon_optimizer_all import get_muon_all_optimizer
-from optimizers.muon_optimizer_all_dd import get_muon_all_optimizer_dd
+# from optimizers.muon_optimizer_all_dd import get_muon_all_optimizer_dd
 from optimizers.RMNP_optimizer import get_rmnp_optimizer
 from optimizers.RMNP_optimizer_all import get_rmnp_all_optimizer
 from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM
@@ -101,8 +101,8 @@ def parse_args(args):
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--name", type=str, default="test")
     parser.add_argument("--grad_clipping", type=float, default=0.0)
-    parser.add_argument("--compute_dd", action="store_true", default=False,
-                        help="Compute diagonal dominance metrics for Muon optimizer")
+    # parser.add_argument("--compute_dd", action="store_true", default=False,
+                        # help="Compute diagonal dominance metrics for Muon optimizer")
     parser.add_argument("--single_cuda", default=False, action="store_true")
     parser.add_argument("--use_hf_model", default=False, action="store_true")
     
@@ -313,20 +313,20 @@ def main(args):
     if args.optimizer.lower() == "muon":
         lr_muon = args.lr_matrix if args.lr_matrix is not None else args.lr
         lr_adamw = args.lr_adam if args.lr_adam is not None else 0.001
-        if args.compute_dd:
-            optimizer = get_muon_optimizer_dd(model, lr_muon=lr_muon, lr_adamw=lr_adamw, weight_decay=args.weight_decay)
-            logger.info("Using Muon optimizer with diagonal dominance monitoring")
-        else:
-            optimizer = get_muon_optimizer(model, lr_muon=lr_muon, lr_adamw=lr_adamw, weight_decay=args.weight_decay)
+        # if args.compute_dd:
+            # optimizer = get_muon_optimizer_dd(model, lr_muon=lr_muon, lr_adamw=lr_adamw, weight_decay=args.weight_decay)
+            # logger.info("Using Muon optimizer with diagonal dominance monitoring")
+        # else:
+        optimizer = get_muon_optimizer(model, lr_muon=lr_muon, lr_adamw=lr_adamw, weight_decay=args.weight_decay)
     elif args.optimizer.lower() == "muon_all":
         lr_muon = args.lr_matrix if args.lr_matrix is not None else args.lr
         lr_adamw = args.lr_adam if args.lr_adam is not None else 0.001
-        if args.compute_dd:
-            optimizer = get_muon_all_optimizer_dd(model, lr_muon=lr_muon, lr_adamw=lr_adamw, weight_decay=args.weight_decay)
-            logger.info("Using Muon-All optimizer with DD monitoring")
-        else:
-            optimizer = get_muon_all_optimizer(model, lr_muon=lr_muon, lr_adamw=lr_adamw, weight_decay=args.weight_decay)
-            logger.info("Using Muon-All optimizer (embed/lm_head included in Muon)")
+        # if args.compute_dd:
+            # optimizer = get_muon_all_optimizer_dd(model, lr_muon=lr_muon, lr_adamw=lr_adamw, weight_decay=args.weight_decay)
+            # logger.info("Using Muon-All optimizer with DD monitoring")
+        # else:
+        optimizer = get_muon_all_optimizer(model, lr_muon=lr_muon, lr_adamw=lr_adamw, weight_decay=args.weight_decay)
+        logger.info("Using Muon-All optimizer (embed/lm_head included in Muon)")
     elif args.optimizer.lower() == "rmnp":
         # Use separate learning rates - both must be specified for RMNP
         if args.lr_matrix is None or args.lr_adam is None:
@@ -532,47 +532,47 @@ def main(args):
                 "throughput_examples": args.total_batch_size / update_time,
                 "throughput_batches": batches_in_update / update_time,
             }
-            # Diagonal dominance metrics
-            if args.compute_dd and hasattr(optimizer, 'dd_per_param'):
-                # Separate hidden / embed / lm_head metrics
-                ratio_keys = ["ratio_to_max_avg", "ratio_to_max_min", "ratio_to_max_max",
-                              "ratio_to_avg_avg", "ratio_to_avg_min", "ratio_to_avg_max"]
-                hidden_ratios = {k: [] for k in ratio_keys}
-                embed_ratios = {k: [] for k in ratio_keys}
-                lm_head_ratios = {k: [] for k in ratio_keys}
-
-                for pname, metrics in optimizer.dd_per_param.items():
-                    # Per-param dd_ratio
-                    for k in ratio_keys:
-                        log_dict[f"dd_ratio/{pname}/{k}"] = metrics[k]
-
-                    # Categorize
-                    if 'lm_head' in pname:
-                        target = lm_head_ratios
-                    elif 'embed' in pname:
-                        target = embed_ratios
-                    else:
-                        target = hidden_ratios
-                    for k in ratio_keys:
-                        target[k].append(metrics[k])
-
-                # Global hidden averages
-                if hidden_ratios[ratio_keys[0]]:
-                    n = len(hidden_ratios[ratio_keys[0]])
-                    for k in ratio_keys:
-                        log_dict[f"dd_ratio/hidden/{k}"] = sum(hidden_ratios[k]) / n
-
-                # Embed averages
-                if embed_ratios[ratio_keys[0]]:
-                    n = len(embed_ratios[ratio_keys[0]])
-                    for k in ratio_keys:
-                        log_dict[f"dd_ratio/embed/{k}"] = sum(embed_ratios[k]) / n
-
-                # lm_head averages
-                if lm_head_ratios[ratio_keys[0]]:
-                    n = len(lm_head_ratios[ratio_keys[0]])
-                    for k in ratio_keys:
-                        log_dict[f"dd_ratio/lm_head/{k}"] = sum(lm_head_ratios[k]) / n
+            # # Diagonal dominance metrics
+            # if args.compute_dd and hasattr(optimizer, 'dd_per_param'):
+                # # Separate hidden / embed / lm_head metrics
+                # ratio_keys = ["ratio_to_max_avg", "ratio_to_max_min", "ratio_to_max_max",
+                              # "ratio_to_avg_avg", "ratio_to_avg_min", "ratio_to_avg_max"]
+                # hidden_ratios = {k: [] for k in ratio_keys}
+                # embed_ratios = {k: [] for k in ratio_keys}
+                # lm_head_ratios = {k: [] for k in ratio_keys}
+# 
+                # for pname, metrics in optimizer.dd_per_param.items():
+                    # # Per-param dd_ratio
+                    # for k in ratio_keys:
+                        # log_dict[f"dd_ratio/{pname}/{k}"] = metrics[k]
+# 
+                    # # Categorize
+                    # if 'lm_head' in pname:
+                        # target = lm_head_ratios
+                    # elif 'embed' in pname:
+                        # target = embed_ratios
+                    # else:
+                        # target = hidden_ratios
+                    # for k in ratio_keys:
+                        # target[k].append(metrics[k])
+# 
+                # # Global hidden averages
+                # if hidden_ratios[ratio_keys[0]]:
+                    # n = len(hidden_ratios[ratio_keys[0]])
+                    # for k in ratio_keys:
+                        # log_dict[f"dd_ratio/hidden/{k}"] = sum(hidden_ratios[k]) / n
+# 
+                # # Embed averages
+                # if embed_ratios[ratio_keys[0]]:
+                    # n = len(embed_ratios[ratio_keys[0]])
+                    # for k in ratio_keys:
+                        # log_dict[f"dd_ratio/embed/{k}"] = sum(embed_ratios[k]) / n
+# 
+                # # lm_head averages
+                # if lm_head_ratios[ratio_keys[0]]:
+                    # n = len(lm_head_ratios[ratio_keys[0]])
+                    # for k in ratio_keys:
+                        # log_dict[f"dd_ratio/lm_head/{k}"] = sum(lm_head_ratios[k]) / n
             wandb.log(log_dict, step=update_step)
             
         update_time = time.time()

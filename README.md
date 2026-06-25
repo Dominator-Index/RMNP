@@ -47,19 +47,19 @@ To verify the condition under which $\mathrm{RowNormalize}(M_t) \approx U V^\top
 r_i \;=\; \frac{\bigl|(V_t V_t^\top)_{ii}\bigr|}{\tfrac{1}{m-1}\sum_{j\neq i}\bigl|(V_t V_t^\top)_{ij}\bigr|},
 ```
 
-and aggregate across rows to obtain $r_{\text{avg}}$, $r_{\min}$, $r_{\max}$. Averaging these three statistics over all matrix parameters in the network gives the global metrics $\overline{r_{\text{avg}}}$, $\overline{r_{\min}}$, $\overline{r_{\max}}$. A value $r_i > 1$ means the diagonal entry exceeds the mean off-diagonal magnitude in row $i$ — the larger, the closer $V_t V_t^\top$ is to a diagonal matrix.
+and aggregate across rows to obtain $r_{\text{avg}}$, $r_{\min}$, $r_{\max}$. Averaging these three statistics over all matrix parameters in the network gives the global metrics $\overline{r_{\text{avg}}}$, $\overline{r_{\min}}$, $\overline{r_{\max}}$. A value $r_i > 1$ means the diagonal entry exceeds the mean off-diagonal magnitude in row $i$. The larger this value is, the closer $V_t V_t^\top$ is to a diagonal matrix.
 
 ![Global diagonal-dominance ratios $\overline{r_{\text{avg}}}, \overline{r_{\min}}, \overline{r_{\max}}$ across GPT-2 (Small/Medium/Large, top) and LLaMA (60M/130M/350M, bottom). X-axis: relative training progress (%); y-axis: log scale; red dashed line $y=1$ marks the dominance threshold.](assets/diagonal_dominance_ratio.png)
 
-**Observations.** Across all six configurations and the full training trajectory: $\overline{r_{\min}}$ stays comfortably above the $y=1$ threshold, $\overline{r_{\text{avg}}}$ consistently exceeds $5$, and $\overline{r_{\max}}$ reaches the order of tens. More importantly, **diagonal dominance strengthens monotonically as model size grows** — GPT-2 Large and LLaMA 350M exhibit visibly higher $\overline{r}$ across all three statistics than their smaller counterparts. This indicates that the row-wise block-diagonal dominance underlying RMNP is not an artefact of small scale; it becomes *more* pronounced as models scale, making RMNP an increasingly favorable replacement for Muon's NS iteration at scale.
+**Observations.** Across all six configurations and the full training trajectory: $\overline{r_{\min}}$ stays comfortably above the $y=1$ threshold, $\overline{r_{\text{avg}}}$ consistently exceeds $5$, and $\overline{r_{\max}}$ reaches the order of tens. More importantly, **diagonal dominance strengthens monotonically as model size grows**. GPT-2 Large and LLaMA 350M exhibit visibly higher $\overline{r}$ across all three statistics than their smaller counterparts. This indicates that the row-wise block-diagonal dominance underlying RMNP is not an artefact of small scale. Instead, it becomes *more* pronounced as models scale, which makes RMNP an increasingly favorable replacement for Muon's NS iteration at scale.
 
-**Key idea.** When $M_t$ is row-diagonally dominant (empirically observed and strengthening with scale), the leading singular directions of $M_t$ align with its rows, and the orthogonal factor from $M_t = U\Sigma V^\top$ satisfies $U V^\top \approx \mathrm{RowNormalize}(M_t)$. RMNP therefore matches Muon's update direction while replacing the iterative NS polynomial (multiple matmuls per step) with a single elementwise normalization — yielding lower wall-clock cost and friendlier scaling to large hidden dimensions.
+**Key idea.** When $M_t$ is row-diagonally dominant (empirically observed and strengthening with scale), the leading singular directions of $M_t$ align with its rows, and the orthogonal factor from $M_t = U\Sigma V^\top$ satisfies $U V^\top \approx \mathrm{RowNormalize}(M_t)$. RMNP therefore matches Muon's update direction while replacing the iterative NS polynomial (multiple matmuls per step) with a single elementwise normalization. This yields lower wall-clock cost and friendlier scaling to large hidden dimensions.
 
 ## Main Results
 
 ### Perplexity
 
-![Final validation perplexity (lower is better) across three pretraining settings. **Left:** LLaMA on C4 — 60M (1B tokens), 130M (2B), 350M (6B), 1B (9B). **Middle:** GPT-2 on FineWeb-Edu-100B — Small (125M), Medium (355M), Large (770M), XL (1.5B). **Right:** GPT-2 on OpenWebText — Small (5B tokens), Medium (10B), Large (20B). RMNP attains the lowest perplexity in every cell.](assets/main_results_bar.png)
+![Final validation perplexity (lower is better) across three pretraining settings. **Left:** LLaMA on C4, at 60M (1B tokens), 130M (2B), 350M (6B), 1B (9B). **Middle:** GPT-2 on FineWeb-Edu-100B, at Small (125M), Medium (355M), Large (770M), XL (1.5B). **Right:** GPT-2 on OpenWebText, at Small (5B tokens), Medium (10B), Large (20B). RMNP attains the lowest perplexity in every cell.](assets/main_results_bar.png)
 
 RMNP matches or exceeds Muon's perplexity across **every** model scale and dataset, consistent with the diagonal-dominance trend reported above.
 
@@ -87,7 +87,7 @@ RMNP/
     └── torchrun_main.py  # distributed training entrypoint
 ```
 
-Both sub-projects ship three optimizer baselines — **AdamW**, **Muon**, **RMNP** — so that results can be reproduced under matched data, schedule, and hyperparameters.
+Both sub-projects ship the same three optimizer baselines, **AdamW**, **Muon**, and **RMNP**, so that results can be reproduced under matched data, schedule, and hyperparameters.
 
 ## Installation
 
@@ -107,10 +107,10 @@ pip install -r requirements.txt
 
 ## Quick Start
 
-Each sub-project is self-contained; see its local README for dataset preparation and per-script hyperparameters:
+Each sub-project is self-contained. Its local README covers data preparation, the full list of launch scripts, and the exact command for every run, with the hyperparameters written out for each optimizer, dataset, and model size. A typical command looks like `LR=2e-3 bash scripts/run_rmnp_small_streaming_fw.sh`.
 
-- [`GPT-2/README.md`](GPT-2/README.md) — GPT-2 pre-training on **OpenWebText** (Small / Medium / Large) and **FineWeb-Edu** (Small / Medium / Large / XL).
-- [`LLaMA/README.md`](LLaMA/README.md) — LLaMA pre-training (60M – 1B) with `torchrun`.
+- [**`GPT-2/README.md`**](GPT-2/README.md) covers GPT-2 pre-training. It is organized by dataset, then optimizer, then size. **OpenWebText** (`_owt`) covers Small, Medium, and Large, while **FineWeb-Edu-100B** (`_fw`) covers Small, Medium, Large, and XL. Each dataset runs with AdamW, Muon, and RMNP. The [**Running Training Scripts**](GPT-2/README.md#running-training-scripts) section has copy-paste commands.
+- [**`LLaMA/README.md`**](LLaMA/README.md) covers LLaMA pre-training on streaming **C4**. It is organized by optimizer, then size. The optimizers are AdamW, Muon, Muon-All, RMNP, and RMNP-All, and each one runs at 60M, 135M, 350M, and 1B. The [**Running Training Scripts**](LLaMA/README.md#running-training-scripts) section has copy-paste commands.
 
 Once the environment is ready, launch a run with:
 

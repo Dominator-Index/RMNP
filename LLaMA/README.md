@@ -1,6 +1,6 @@
 # LLaMA Pre-training with Muon and RMNP Optimizers
 
-A clean and efficient PyTorch training pipeline for LLaMA models using Muon and RMNP optimizers. Supports distributed training across multiple model sizes (60M, 130M, 350M parameters).
+A clean and efficient PyTorch training pipeline for LLaMA models using Muon and RMNP optimizers (plus their `_all` variants). Supports distributed training across multiple model sizes (60M, 135M, 350M, 1B parameters) on streaming C4.
 
 ## Environment Setup
 
@@ -71,49 +71,107 @@ source .env
 
 The pipeline provides ready-to-use training scripts for different optimizer and model size combinations:
 
-### Available Training Scripts
+### Data
 
-1. **Muon Optimizer:**
-   - `scripts/train_muon_60m.sh` - 60M parameters
-   - `scripts/train_muon_130m.sh` - 130M parameters  
-   - `scripts/train_muon_350m.sh` - 350M parameters
-
-2. **RMNP Optimizer:**
-   - `scripts/train_RMNP_60m.sh` - 60M parameters
-   - `scripts/train_RMNP_130m.sh` - 130M parameters
-   - `scripts/train_RMNP_350m.sh` - 350M parameters
+Training streams **C4** (`allenai/c4`, English) straight from the HuggingFace Hub, so you do not need to download or tokenize anything in advance. If you start hitting rate limits, set `HF_TOKEN`.
 
 ### Running Training Scripts
 
-**Basic usage:**
+All commands assume you are in the `LLaMA/` directory:
+
 ```bash
-# Make scripts executable
+cd path/to/RMNP/LLaMA
 chmod +x scripts/*.sh
-
-# Train with Muon optimizer (60M model)
-./scripts/train_muon_60m.sh
-
-# Train with RMNP optimizer (130M model)  
-./scripts/train_RMNP_130m.sh
 ```
 
-**With custom parameters:**
-```bash
-# Override default parameters
-./scripts/train_muon_60m.sh --num_steps 50000 --lr 0.002
+Each `scripts/train_<opt>_<size>.sh` is a small wrapper around `train_universal.sh` that fills in the recipe for one model size. Every script runs on 8 GPUs with batch size 64 and a total batch of 512, which works out to gradient accumulation 1. The sequence length is 256 and training runs in bfloat16. To change a setting, append the matching flag and it overrides the default. For example, this runs a shorter Muon job with a different matrix learning rate:
 
-# Continue from checkpoint
-./scripts/train_RMNP_130m.sh --continue_from ./checkpoints/previous_run/model_10000
+```bash
+bash scripts/train_muon_60m.sh --lr_matrix 0.02 --num_steps 5000
+```
+
+The scripts are grouped by optimizer, then by model size. There are five optimizers in total. AdamW is the baseline and takes a single learning rate through `--lr`. Muon and RMNP run the matrix optimizer on the 2D weights only, so the embedding and lm_head still use AdamW. The `_all` variants send the embedding and lm_head through the matrix optimizer as well. The comment above each command lists the exact learning rates and step count, and warmup is always 10% of the steps.
+
+#### 1. AdamW  (baseline, single learning rate)
+```bash
+# 60M   lr 1e-3, steps 10000
+bash scripts/train_adamw_60m.sh
+# 135M  lr 1e-3, steps 20000
+bash scripts/train_adamw_135m.sh
+# 350M  lr 1e-3, steps 60000
+bash scripts/train_adamw_350m.sh
+# 1B    lr 6e-4, steps 90000
+bash scripts/train_adamw_1b.sh
+```
+
+#### 2. Muon  (matrix on 2D weights, embed/lm_head via AdamW)
+```bash
+# 60M   lr_matrix 0.01,  lr_adam 1e-3, steps 10000
+bash scripts/train_muon_60m.sh
+# 135M  lr_matrix 0.01,  lr_adam 1e-3, steps 20000
+bash scripts/train_muon_135m.sh
+# 350M  lr_matrix 0.004, lr_adam 1e-3, steps 60000
+bash scripts/train_muon_350m.sh
+# 1B    lr_matrix 0.001, lr_adam 6e-4, steps 90000
+bash scripts/train_muon_1b.sh
+```
+
+#### 3. Muon-All  (embed/lm_head also through Muon)
+```bash
+# 60M   lr_matrix 0.03,  lr_adam 1e-3, steps 10000
+bash scripts/train_muon_all_60m.sh
+# 135M  lr_matrix 0.01,  lr_adam 1e-3, steps 20000
+bash scripts/train_muon_all_135m.sh
+# 350M  lr_matrix 0.01,  lr_adam 1e-3, steps 60000
+bash scripts/train_muon_all_350m.sh
+# 1B    lr_matrix 0.005, lr_adam 6e-4, steps 90000
+bash scripts/train_muon_all_1b.sh
+```
+
+#### 4. RMNP  (matrix on 2D weights, embed/lm_head via AdamW)
+
+For RMNP, `lr_adam` is kept equal to `lr_matrix`.
+```bash
+# 60M   lr_matrix = lr_adam 0.005, steps 10000
+bash scripts/train_RMNP_60m.sh
+# 135M  lr_matrix = lr_adam 0.03,  steps 20000
+bash scripts/train_RMNP_135m.sh
+# 350M  lr_matrix = lr_adam 0.005, steps 60000
+bash scripts/train_RMNP_350m.sh
+# 1B    lr_matrix = lr_adam 0.005, steps 90000
+bash scripts/train_RMNP_1b.sh
+```
+
+#### 5. RMNP-All  (embed/lm_head also through RMNP)
+```bash
+# 60M   lr_matrix = lr_adam 0.01,  steps 10000
+bash scripts/train_rmnp_all_60m.sh
+# 135M  lr_matrix = lr_adam 0.02,  steps 20000
+bash scripts/train_rmnp_all_135m.sh
+# 350M  lr_matrix = lr_adam 0.005, steps 60000
+bash scripts/train_rmnp_all_350m.sh
+# 1B    lr_matrix = lr_adam 0.005, steps 90000
+bash scripts/train_rmnp_all_1b.sh
+```
+
+**Override a default or resume from a checkpoint**
+
+```bash
+# Shorter run with a different matrix learning rate
+bash scripts/train_muon_60m.sh --lr_matrix 0.02 --num_steps 5000
+
+# Continue from a saved checkpoint
+bash scripts/train_RMNP_135m.sh --continue_from ./checkpoints/previous_run/model_10000
 ```
 
 ### Training Configuration
 
-All scripts use optimized defaults:
-- **Total Batch Size:** 512 (distributed across GPUs)
+All scripts use these defaults (override by appending flags):
+- **GPUs:** 8 (`--num_gpus 8`)
+- **Total Batch Size:** 512 (`--batch_size 64` × 8 GPUs → gradient accumulation 1)
 - **Sequence Length:** 256 tokens
 - **Mixed Precision:** bfloat16
-- **Gradient Accumulation:** Auto-calculated
-- **Distributed Training:** 4 GPUs (adjustable in scripts)
+- **Warmup:** 10% of `--num_steps`
 
 ### Output Structure
 
@@ -139,13 +197,15 @@ checkpoints/
 ### Custom Training
 ```bash
 # Use the universal script for full customization
-./scripts/train_universal.sh \
-    --model_size 130m \
+bash scripts/train_universal.sh \
+    --model_size 135m \
     --optimizer RMNP \
-    --lr_matrix 0.005 \
-    --lr_adam 0.001 \
+    --num_gpus 8 \
+    --lr_matrix 0.03 \
+    --lr_adam 0.03 \
     --num_steps 20000 \
-    --batch_size 24
+    --batch_size 64 \
+    --total_batch_size 512
 ```
 
 ### Multi-Node Training
@@ -156,15 +216,16 @@ torchrun --nnodes=2 --nproc_per_node=4 --master_addr=node1 --master_port=29500 .
 
 ## Optimizer Details
 
-### Muon Optimizer
-- **Type:** Mixed AdamW optimizer
-- **Usage:** Single learning rate (`--lr`)
-- **Best for:** General pre-training tasks
+### AdamW
+- **Use:** the baseline. It takes one learning rate, which you set with `--lr`.
 
-### RMNP Optimizer  
-- **Type:** Grouped parameter optimizer
-- **Usage:** Dual learning rates (`--lr_matrix`, `--lr_adam`)
-- **Best for:** Fine-tuned parameter optimization
+### Muon
+- **Use:** it runs the matrix update on the 2D weights and AdamW on everything else. Set `--lr_matrix` for the matrix part and `--lr_adam` for the AdamW part.
+- **`muon_all` variant:** it sends the embedding and lm_head through Muon as well.
+
+### RMNP
+- **Use:** the same split as Muon, except the matrix step is RMNP. Set `--lr_matrix` and `--lr_adam`. In all of our recipes we keep `--lr_adam` equal to `--lr_matrix`.
+- **`rmnp_all` variant:** it sends the embedding and lm_head through RMNP as well.
 
 ## Troubleshooting
 

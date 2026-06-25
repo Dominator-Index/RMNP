@@ -41,7 +41,7 @@ while [[ $# -gt 0 ]]; do
         --save_dir)         SAVE_DIR="$2";          shift 2 ;;
         --wandb_name)       WANDB_NAME="$2";        shift 2 ;;
         --continue_from)    CONTINUE_FROM="$2";     shift 2 ;;
-        --compute_dd)       COMPUTE_DD="true";      shift 1 ;;
+        # --compute_dd)       COMPUTE_DD="true";      shift 1 ;;   # dd disabled for public release
         --help|-h)
             echo "Usage: $0 --model_size {60m|135m|350m|1b} --optimizer {muon|muon_all|RMNP|rmnp_all|adamw} --lr_matrix LR --lr_adam LR [options]"
             exit 0 ;;
@@ -99,7 +99,7 @@ ARGS=(
 )
 [[ -n "$LR_MATRIX" ]]         && ARGS+=(--lr_matrix "$LR_MATRIX")
 [[ -n "$LR_ADAM" ]]           && ARGS+=(--lr_adam "$LR_ADAM")
-[[ "$COMPUTE_DD" == "true" ]] && ARGS+=(--compute_dd)
+# [[ "$COMPUTE_DD" == "true" ]] && ARGS+=(--compute_dd)   # dd disabled for public release
 [[ -n "$CONTINUE_FROM" ]]     && ARGS+=(--continue_from "$CONTINUE_FROM")
 
 cd "$PROJECT_DIR"
