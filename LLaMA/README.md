@@ -274,4 +274,6 @@ For Muon and Muon-All, the two numbers are written as `lr` / `matrix_lr`. The fi
 | `WANDB_API_KEY` | **Yes** | WandB API key for experiment tracking | [WandB Settings](https://wandb.ai/settings) |
 | `WANDB_PROJECT` | No | WandB project name (default: llama-pretraining) | Set to your project name |
 
-For support or contributions, please refer to the training logs and WandB runs for debugging information.
+## Contact
+
+Questions and feedback are welcome. Feel free to reach out to Zhuoli Ouyang at oyzl2004@gmail.com or Zhuoli.Ouyang@dartmouth.edu, or to our collaborator Shenyang Deng at shenyang.deng.gr@dartmouth.edu.

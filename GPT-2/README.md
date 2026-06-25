@@ -310,4 +310,6 @@ For Muon and RMNP, two learning rates are shown as `lr` / `matrix_lr`. The first
 
 This repo is built upon [nanoGPT](https://github.com/karpathy/nanoGPT/), [levanter](https://github.com/stanford-crfm/levanter/) and [Sophia](https://github.com/Liuhong99/Sophia).
 
-For support or contributions, please refer to the training logs and WandB runs for debugging information.
+## Contact
+
+Questions and feedback are welcome. Feel free to reach out to Zhuoli Ouyang at oyzl2004@gmail.com or Zhuoli.Ouyang@dartmouth.edu, or to our collaborator Shenyang Deng at shenyang.deng.gr@dartmouth.edu.
