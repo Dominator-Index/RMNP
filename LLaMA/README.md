@@ -276,4 +276,4 @@ For Muon and Muon-All, the two numbers are written as `lr` / `matrix_lr`. The fi
 
 ## Contact
 
-Questions and feedback are welcome. Feel free to email Zhuoli Ouyang at oyzl2004@gmail.com or Zhuoli.Ouyang@dartmouth.edu, or our collaborator Shenyang Deng at shenyang.deng.gr@dartmouth.edu.
+Questions and feedback are welcome. Feel free to reach out to Shenyang Deng (shenyang.deng.gr@dartmouth.edu) or Zhuoli Ouyang (oyzl2004@gmail.com, Zhuoli.Ouyang@dartmouth.edu).
