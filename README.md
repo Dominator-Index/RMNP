@@ -39,6 +39,16 @@ with
 \bigl[\mathrm{RowNormalize}(M;\epsilon)\bigr]_{i,:} \;=\; \frac{M_{i,:}}{\lVert M_{i,:} \rVert_2 + \epsilon}.
 ```
 
+### Implementation Details
+
+Muon and RMNP share the same optimizer skeleton and differ in a single core operation. The code makes this difference easy to see.
+
+**Muon transposes tall matrices.** Given a momentum matrix $M$ of shape $m \times n$, Muon first checks its shape. When $m > n$, Muon transposes $M$ to shape $n \times m$, runs the Newton-Schulz iteration, and then transposes the result back. When $m \le n$, Muon runs the iteration directly and does not transpose. The reason is efficiency. The Newton-Schulz iteration repeatedly forms the Gram matrix $X X^\top$, whose size grows with the number of rows, so Muon always orthogonalizes along the smaller dimension $\min(m, n)$. Orthogonalization is transpose symmetric, which means the transpose changes the compute cost but not the final result.
+
+**RMNP only does row normalization.** RMNP replaces the Newton-Schulz iteration with one row normalization step, and it never transposes. It normalizes $M$ in its native (output, input) layout, so every row is scaled to unit $\ell_2$ norm whether the matrix is tall or wide. Because of this, RMNP does not fully approximate Muon. Muon effectively works on the $\min(m, n)$ dimension through its transpose, while RMNP always works on the native row dimension. We keep this choice on purpose, because we found that the native version without the transpose trains better than the transpose-aligned version that would mirror Muon exactly.
+
+**Learning rates.** RMNP uses the same two learning rate design as Muon, so the only thing that changes between them is the core operation above. One learning rate drives the AdamW update on the 1D parameters together with the embedding and the language model head. The other is a matrix learning rate that drives the row normalized update on the 2D weights, and we set it slightly larger than the AdamW learning rate. The exact values for every optimizer, dataset, and model size are listed in [GPT-2/README.md](GPT-2/README.md) and [LLaMA/README.md](LLaMA/README.md).
+
 ### Diagonal-Dominance Monitoring
 
 To verify the condition under which $\mathrm{RowNormalize}(M_t) \approx U V^\top$ holds, we monitor the row-wise diagonal-dominance ratio of the Gram matrix $V_t V_t^\top$ throughout training. For row $i$ we define

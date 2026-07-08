@@ -13,13 +13,26 @@ import os
 @torch.compile
 def row_normalize(G):
     """
-    Row normalization: normalize each row to have unit L2 norm.
+    Row normalization: normalize each row of G to unit L2 norm.
+
+    Design note (intentional difference from Muon):
+        Muon's Newton-Schulz step transposes any tall matrix (m > n) so that the
+        iteration runs on the smaller min(m, n) dimension. RMNP does NOT transpose.
+        We always normalize G in its native (out_features, in_features) layout, i.e.
+        we normalize each *row* (each output neuron's fan-in update) regardless of
+        whether the matrix is tall or wide.
+
+        This keeps the normalized dimension consistent across every layer (always the
+        output/row dimension). Empirically we found that this native, no-transpose
+        variant trains better than the transpose-aligned (min(m, n)) variant that
+        would exactly mirror Muon, so the no-transpose behavior below is deliberate
+        and should be kept.
 
     Args:
-        G: Input tensor to normalize (2D)
+        G: Input tensor to normalize (2D), shape (m, n).
 
     Returns:
-        Row-normalized tensor where each row has unit L2 norm
+        Row-normalized tensor where each of the m rows has unit L2 norm.
     """
     return F.normalize(G, p=2, dim=-1)
 
