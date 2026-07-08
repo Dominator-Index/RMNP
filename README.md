@@ -42,7 +42,7 @@ with
 ### Implementation Details
 
 <p align="center">
-  <img src="assets/implementation.svg" alt="The weight has shape (output, input). Left: for a tall matrix (m>n, 4x3) Muon transposes to the short side while RMNP does not, and for a wide matrix (m<n, 3x4) neither needs a transpose. Right: each row is one output neuron, and RMNP normalizes it over the input dim, mapping every row onto the unit sphere so its L2 norm is 1." width="94%">
+  <img src="assets/implementation.svg" alt="The weight has shape (output, input). Left: for a tall matrix (m>n, 4x3) Muon transposes to the short side while RMNP does not, and for a wide matrix (m<n, 3x4) neither needs a transpose. Right: each row is one output neuron, and RMNP normalizes it over the input dim, mapping every row onto the unit sphere so its L2 norm is 1." width="100%">
 </p>
 
 Muon and RMNP share the same optimizer skeleton and differ in a single operation on each 2D update. The diff below shows exactly what changes. The red lines run only in Muon, and the green line is what RMNP uses instead.
