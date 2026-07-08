@@ -41,13 +41,28 @@ with
 
 ### Implementation Details
 
-Muon and RMNP share the same optimizer skeleton and differ in a single core operation. The code makes this difference easy to see.
+<p align="center">
+  <img src="assets/implementation.svg" alt="Left: for a tall matrix (m>n, 4x3) Muon transposes to the short side while RMNP does not; for a wide matrix (m<n, 3x4) neither needs a transpose. Right: RMNP rescales each row to unit L2 norm." width="94%">
+</p>
 
-**Muon transposes tall matrices.** Given a momentum matrix $M$ of shape $m \times n$, Muon first checks its shape. When $m > n$, Muon transposes $M$ to shape $n \times m$, runs the Newton-Schulz iteration, and then transposes the result back. When $m \le n$, Muon runs the iteration directly and does not transpose. The reason is efficiency. The Newton-Schulz iteration repeatedly forms the Gram matrix $X X^\top$, whose size grows with the number of rows, so Muon always orthogonalizes along the smaller dimension $\min(m, n)$. Orthogonalization is transpose symmetric, which means the transpose changes the compute cost but not the final result.
+Muon and RMNP share the same optimizer skeleton and differ in a single operation on each 2D update. The diff below shows exactly what changes. The red lines run only in Muon, and the green line is what RMNP uses instead.
 
-**RMNP only does row normalization.** RMNP replaces the Newton-Schulz iteration with one row normalization step, and it never transposes. It normalizes $M$ in its native (output, input) layout, so every row is scaled to unit $\ell_2$ norm whether the matrix is tall or wide. Because of this, RMNP does not fully approximate Muon. Muon effectively works on the $\min(m, n)$ dimension through its transpose, while RMNP always works on the native row dimension. We keep this choice on purpose, because we found that the native version without the transpose trains better than the transpose-aligned version that would mirror Muon exactly.
+```diff
+  # update for a 2D momentum matrix M of shape (m, n)
+- if M.size(0) > M.size(1):     # Muon transposes tall matrices (m > n)
+-     M = M.T                   # so Newton-Schulz runs on the smaller min(m, n)
+- for _ in range(steps):        # Newton-Schulz orthogonalization
+-     A = M @ M.T
+-     B = A @ M
+-     M = a*M + b*B + c*A@B
+- if M.size(0) > M.size(1):
+-     M = M.T                   # transpose back
++ M = F.normalize(M, p=2, dim=-1)   # RMNP: one row normalization, no transpose
+```
 
-**Learning rates.** RMNP uses the same two learning rate design as Muon, so the only thing that changes between them is the core operation above. One learning rate drives the AdamW update on the 1D parameters together with the embedding and the language model head. The other is a matrix learning rate that drives the row normalized update on the 2D weights, and we set it slightly larger than the AdamW learning rate. The exact values for every optimizer, dataset, and model size are listed in [GPT-2/README.md](GPT-2/README.md) and [LLaMA/README.md](LLaMA/README.md).
+The highlighted lines carry the whole story. Muon transposes any tall matrix so that Newton-Schulz always runs on the smaller dimension $\min(m, n)$, and it transposes the result back. RMNP drops all of that and applies a single row normalization in the native (output, input) layout, so it normalizes the row dimension whether the matrix is tall or wide. This is why RMNP does not fully approximate Muon. We keep the no-transpose version on purpose, because we found that it trains better than the transpose-aligned version that would mirror Muon exactly.
+
+**Learning rates.** RMNP keeps the same two learning rates as Muon. One is the AdamW learning rate for the 1D parameters, the embedding, and the lm_head. The other is the matrix learning rate for the 2D weights, and we set it slightly larger than the AdamW one. See [GPT-2/README.md](GPT-2/README.md) and [LLaMA/README.md](LLaMA/README.md) for the exact values.
 
 ### Diagonal-Dominance Monitoring
 
