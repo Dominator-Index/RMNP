@@ -1,6 +1,6 @@
 # Muon vs. RMNP: Validation-Loss Races
 
-Animated validation-loss curves for **Muon vs. RMNP only** (AdamW omitted for clarity), one per model/dataset. Each GIF reveals the curve step by step, tags whichever optimizer currently has the lower loss, and marks the first step where RMNP overtakes Muon for good with a dashed line. See the main [**`README.md`**](README.md#validation-loss-race-rmnp-catches-up-to-muon) for the highlighted GPT-2 Small and LLaMA-135M races; the two additional GPT-2 sizes are below.
+Animated validation-loss curves for **Muon vs. RMNP only** (AdamW omitted for clarity), one per model/dataset. Each GIF reveals the curve step by step, tags whichever optimizer currently has the lower loss, and marks the first step where RMNP overtakes Muon for good with a dashed line. See the main [**`README.md`**](README.md#validation-loss-race-rmnp-catches-up-to-muon) for the highlighted GPT-2 Small and LLaMA-135M races. The two additional GPT-2 sizes are below.
 
 ## GPT-2 Small — FineWeb-Edu, 10K steps
 
@@ -16,9 +16,9 @@ RMNP is roughly tied with Muon for most of training, dips briefly behind around 
 
 ## GPT-2 XLarge — FineWeb-Edu, 50K steps
 
-RMNP and Muon trade the lead repeatedly at this scale; RMNP is ahead more often than not and finishes 0.030 lower.
+RMNP and Muon trade the lead repeatedly at this scale, but RMNP is ahead more often than not and finishes 0.030 lower.
 
-![GPT-2 XLarge on FineWeb-Edu, validation loss over 50K steps: RMNP and Muon trade the lead repeatedly; RMNP finishes 0.030 lower.](assets/gpt2-xlarge-fw-muon-vs-rmnp.gif)
+![GPT-2 XLarge on FineWeb-Edu, validation loss over 50K steps: RMNP and Muon trade the lead repeatedly, and RMNP finishes 0.030 lower.](assets/gpt2-xlarge-fw-muon-vs-rmnp.gif)
 
 ## LLaMA-135M — C4, 20K steps
 
