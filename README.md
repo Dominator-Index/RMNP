@@ -90,14 +90,14 @@ RMNP matches or exceeds Muon's perplexity across **every** model scale and datas
 
 ### Validation-Loss Race: RMNP Catches Up to Muon
 
-RMNP's single row normalization is a much cruder preconditioner than Muon's iterative Newton–Schulz orthogonalization, so early in training RMNP can trail Muon. As training progresses, RMNP catches up and pulls ahead for good. The animations below replay validation loss step by step for **Muon vs. RMNP only**, with AdamW omitted for clarity. A dashed marker flags the first step where RMNP overtakes Muon and stays there.
+RMNP's single row normalization is a much cruder preconditioner than Muon's iterative Newton–Schulz orthogonalization, so early in training RMNP *can* trail Muon, though this is not guaranteed and its extent varies widely by run and model size. The two animations below are representative examples of that early-trailing pattern. Each replays validation loss step by step for **Muon vs. RMNP only**, with AdamW omitted for clarity. A dashed marker flags the first step where RMNP overtakes Muon and stays there.
 
 <p align="center">
   <img src="assets/gpt2-small-fw-muon-vs-rmnp.gif" alt="GPT-2 Small on FineWeb-Edu, validation loss over 10K steps: RMNP trails Muon through step 4K, catches up at step 5K, and finishes 0.005 lower." width="49%">
   <img src="assets/llama-135m-muon-vs-rmnp.gif" alt="LLaMA-135M on C4, validation loss over 20K steps: RMNP trails Muon for most of training, catches up at step 14.5K, and finishes 0.016 lower." width="49%">
 </p>
 
-Two more sizes (**GPT-2 Large** and **GPT-2 XLarge**, both on FineWeb-Edu) are animated in [**`LOSS_CURVES.md`**](LOSS_CURVES.md).
+Nine more races are animated in [**`LOSS_CURVES.md`**](LOSS_CURVES.md), covering every GPT-2 size on both OpenWebText and FineWeb-Edu, and every LLaMA size from 60M to 1B on C4. How long RMNP trails before catching up varies widely across them, from as little as 5% of training to as much as 90%.
 
 ### Preconditioner Wall-Clock Time
 
