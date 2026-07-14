@@ -1,13 +1,14 @@
 # RMNP: Row-Momentum Normalized Preconditioning for Scalable Matrix-Based Optimization
 
-> ### Input dimension normalization is all you need.
+> ### $\color{purple}{\textbf{Input dimension normalization is all you need.}}$
 
-This repository contains the official implementation of **RMNP (Row-Momentum Normalized Preconditioning)**, a scalable matrix-based optimizer for large model pre-training. RMNP replaces the Newton–Schulz (NS) iteration used by **Muon** with a simple per-row $\ell_2$ normalization of the momentum buffer, which is provably equivalent to Muon's orthogonalization step under the row-wise block-diagonal dominance regime that we observe to hold (and grow stronger) for transformer gradient momentum matrices in practice.
+This repository contains the official implementation of **RMNP (Row-Momentum Normalized Preconditioning)**, a scalable matrix-based optimizer for large model pre-training. RMNP replaces the Newton–Schulz (NS) iteration used by **Muon** with $\color{blue}{\textbf{a simple per-row } \ell_2 \textbf{ normalization}}$ of the momentum buffer, which is provably equivalent to Muon's orthogonalization step under the row-wise block-diagonal dominance regime that we observe to hold (and grow stronger) for transformer gradient momentum matrices in practice.
 
 ## News
 
+- **[ICML 2026]** RMNP has been accepted to the 43rd International Conference on Machine Learning.
 - **[ICML 2026]** RMNP is presented at the [Protocol Learning Workshop](https://luma.com/almfr7q2?tk=hon6B4) in Seoul, South Korea.
-- **[ICML 2026 HiLD Workshop]** Our follow-up paper, [*"How Does Orthogonalization Adapt to the Neural-Network Hessian Structure? A Gradient Self Outer-Product Analysis at Initialization"*](https://openreview.net/pdf?id=U812abpXRD) (Shenyang Deng, Shuhua Yu, Yaoqing Yang), has been accepted at the Workshop on High-dimensional Learning Dynamics.
+- **[ICML 2026 HiLD Workshop]** The theoretical paper, [*"How Does Orthogonalization Adapt to the Neural-Network Hessian Structure? A Gradient Self Outer-Product Analysis at Initialization"*](https://openreview.net/pdf?id=U812abpXRD), has been accepted at the Workshop on High-dimensional Learning Dynamics.
 
 ## Algorithms
 
@@ -198,11 +199,10 @@ Distributed training works out of the box: when `WORLD_SIZE > 1`, updates are sh
 If you find this work useful, please cite:
 
 ```bibtex
-@article{deng2026rmnp,
-  title   = {RMNP: Row-Momentum Normalized Preconditioning for Scalable Matrix-Based Optimization},
-  author  = {Deng, Shenyang and Ouyang, Zhuoli and Pang, Tianyu and Liu, Zihang and Jin, Ruochen and Yu, Shuhua and Yang, Yaoqing},
-  journal = {arXiv preprint arXiv:2603.20527},
-  year    = {2026}
+@inproceedings{dengrmnp,
+  title={RMNP: Row-Momentum Normalized Preconditioning for Scalable Matrix-Based Optimization},
+  author={Deng, Shenyang and Ouyang, Zhuoli and Pang, Tianyu and Liu, Zihang and Jin, Ruochen and Yu, Shuhua and Yang, Yaoqing},
+  booktitle={Forty-third International Conference on Machine Learning}
 }
 ```
 
