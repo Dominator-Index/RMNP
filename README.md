@@ -88,6 +88,17 @@ and aggregate across rows to obtain $r_{\text{avg}}$, $r_{\min}$, $r_{\max}$. Av
 
 RMNP matches or exceeds Muon's perplexity across **every** model scale and dataset, consistent with the diagonal-dominance trend reported above.
 
+### Validation-Loss Race: RMNP Catches Up to Muon
+
+RMNP's single row normalization is a much cruder preconditioner than Muon's iterative Newton–Schulz orthogonalization, so early in training RMNP can trail Muon. As training progresses, RMNP catches up and pulls ahead for good. The animations below replay validation loss step by step for **Muon vs. RMNP only** (AdamW omitted for clarity); the dashed marker flags the first step where RMNP overtakes Muon and stays there.
+
+<p align="center">
+  <img src="assets/gpt2-small-fw-muon-vs-rmnp.gif" alt="GPT-2 Small on FineWeb-Edu, validation loss over 10K steps: RMNP trails Muon through step 4K, catches up at step 5K, and finishes 0.005 lower." width="49%">
+  <img src="assets/llama-135m-muon-vs-rmnp.gif" alt="LLaMA-135M on C4, validation loss over 20K steps: RMNP trails Muon for most of training, catches up at step 14.5K, and finishes 0.016 lower." width="49%">
+</p>
+
+Two more sizes (**GPT-2 Large** and **GPT-2 XLarge**, both on FineWeb-Edu) are animated in [**`LOSS_CURVES.md`**](LOSS_CURVES.md).
+
 ### Preconditioner Wall-Clock Time
 
 <p align="center">
