@@ -6,9 +6,9 @@ This repository contains the official implementation of **RMNP (Row-Momentum Nor
 
 ## News
 
-- **[ICML 2026]** RMNP has been accepted to the 43rd International Conference on Machine Learning.
 - **[ICML 2026]** RMNP is presented at the [Protocol Learning Workshop](https://luma.com/almfr7q2?tk=hon6B4) in Seoul, South Korea.
 - **[ICML 2026 HiLD Workshop]** The theoretical paper, [*"How Does Orthogonalization Adapt to the Neural-Network Hessian Structure? A Gradient Self Outer-Product Analysis at Initialization"*](https://openreview.net/pdf?id=U812abpXRD), has been accepted at the Workshop on High-dimensional Learning Dynamics.
+- **[ICML 2026]** RMNP has been accepted to the 43rd International Conference on Machine Learning.
 
 ## Algorithms
 
