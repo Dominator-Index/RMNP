@@ -1,6 +1,6 @@
 # RMNP: Row-Momentum Normalized Preconditioning for Scalable Matrix-Based Optimization
 
-> ### $\color{purple}{\textbf{Input dimension normalization is all you need.}}$
+> ### $\color[HTML]{1E3A8A}{\textbf{A simple input-dimension normalization goes a long way toward orthogonalization.}}$
 
 This repository contains the official implementation of **RMNP (Row-Momentum Normalized Preconditioning)**, a scalable matrix-based optimizer for large model pre-training. RMNP replaces the Newton–Schulz (NS) iteration used by **Muon** with $\color{blue}{\textbf{a simple per-row } \ell_2 \textbf{ normalization}}$ of the momentum buffer, which is provably equivalent to Muon's orthogonalization step under the row-wise block-diagonal dominance regime that we observe to hold (and grow stronger) for transformer gradient momentum matrices in practice.
 
